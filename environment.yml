@@ -1,0 +1,20 @@
+name: mba706
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - scipy
+  - xgboost=2.1.*
+  - textblob
+  - wordcloud
+  - openpyxl
+  - python-docx
+  - requests
+  - lxml
+  - html5lib
+  - pip
