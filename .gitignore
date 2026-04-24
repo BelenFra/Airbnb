@@ -1,6 +1,14 @@
 # Ignore heavy/raw data files
 data/raw/**
 !data/raw/.gitkeep
+!data/raw/reviews/
+!data/raw/reviews/README.md
+data/processed/reviews/**
+!data/processed/reviews/.gitkeep
+!data/processed/reviews/README.md
+results/reviews/**
+!results/reviews/.gitkeep
+reports/reviews/**
 
 # Optional local artifacts
 .cache/
