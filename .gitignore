@@ -3,12 +3,20 @@ data/raw/**
 !data/raw/.gitkeep
 !data/raw/reviews/
 !data/raw/reviews/README.md
+!data/raw/calendars/
+!data/raw/calendars/README.md
 data/processed/reviews/**
 !data/processed/reviews/.gitkeep
 !data/processed/reviews/README.md
+data/processed/calendars/**
+!data/processed/calendars/.gitkeep
+!data/processed/calendars/README.md
 results/reviews/**
 !results/reviews/.gitkeep
+results/calendars/**
+!results/calendars/.gitkeep
 reports/reviews/**
+reports/calendars/**
 
 # Optional local artifacts
 .cache/
