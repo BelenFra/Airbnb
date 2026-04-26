@@ -1,0 +1,57 @@
+Listing null replacement summary
+Input file: C:\Users\belen\Documents\Projects\Airbnb\data\processed\listing\merged\listing_by_city_cleaned.csv
+Actions file: C:\Users\belen\Documents\Projects\Airbnb\results\listing_global_null_pct.csv
+Output file: C:\Users\belen\Documents\Projects\Airbnb\data\processed\listing\merged\listing_by_city_cleaned_nulls_replaced.csv
+Initial rows: 103708
+Initial columns: 78
+Rows removed by 'Remove empty': 0
+Columns touched by actions: 43
+Final rows: 103708
+Final columns: 78
+Total null cells before: 774641
+Total null cells after: 0
+
+Action log:
+- neighborhood_overview: Replace with unknown -> nulls 53319 -> 0
+- neighbourhood: Replace with unknown -> nulls 53319 -> 0
+- host_about: Replace with unknown -> nulls 39867 -> 0
+- review_scores_value: Replace with 0 -> nulls 24139 -> 0
+- review_scores_location: Replace with 0 -> nulls 24138 -> 0
+- review_scores_checkin: Replace with 0 -> nulls 24137 -> 0
+- review_scores_accuracy: Replace with 0 -> nulls 24135 -> 0
+- review_scores_communication: Replace with 0 -> nulls 24134 -> 0
+- review_scores_cleanliness: Replace with 0 -> nulls 24135 -> 0
+- first_review: Replace with 1900-01-01 -> nulls 24124 -> 0
+- last_review: Replace with 1900-01-01 -> nulls 24124 -> 0
+- review_scores_rating: Replace with 0 -> nulls 24124 -> 0
+- reviews_per_month: Replace with 0 -> nulls 24124 -> 0
+- host_location: Replace with unknown -> nulls 25650 -> 0
+- host_response_rate: Replace with 0 -> nulls 103708 -> 0
+- host_response_time: Replace with 0 -> nulls 103708 -> 0
+- estimated_revenue_l365d: Replace with 0 -> nulls 0 -> 0
+- price: Remove empty -> removed 0 rows
+- beds: Replace with 0 -> nulls 155 -> 0
+- host_acceptance_rate: Replace with 0 -> nulls 103708 -> 0
+- bathrooms: Replace with 0 -> nulls 29 -> 0
+- host_neighbourhood: Replace with unknown -> nulls 21321 -> 0
+- neighbourhood_group_cleansed: Replace with unknown -> nulls 12429 -> 0
+- bedrooms: Replace with 0 -> nulls 332 -> 0
+- has_availability: Replace with unknown -> nulls 806 -> 0
+- host_is_superhost: Replace with unknown -> nulls 2885 -> 0
+- description: Replace with unknown -> nulls 2113 -> 0
+- host_has_profile_pic: Replace with f -> nulls 1067 -> 0
+- host_identity_verified: Replace with f -> nulls 1067 -> 0
+- host_listings_count: Replace with 0 -> nulls 1067 -> 0
+- host_picture_url: Replace with unknown -> nulls 1067 -> 0
+- host_since: Replace with 1900-01-01 -> nulls 1067 -> 0
+- host_thumbnail_url: Replace with unknown -> nulls 1067 -> 0
+- host_total_listings_count: Replace with 0 -> nulls 1067 -> 0
+- host_verifications: Replace with [] -> nulls 1067 -> 0
+- host_name: Replace with unknown -> nulls 1066 -> 0
+- bathrooms_text: Replace with unknown -> nulls 204 -> 0
+- maximum_maximum_nights: Replace with 0 -> nulls 43 -> 0
+- maximum_minimum_nights: Replace with 0 -> nulls 43 -> 0
+- minimum_maximum_nights: Replace with 0 -> nulls 43 -> 0
+- minimum_minimum_nights: Replace with 0 -> nulls 43 -> 0
+- name: Replace with unknown -> nulls 0 -> 0
+- scrape_id: Replace with unknown -> nulls 0 -> 0

@@ -1,0 +1,80 @@
+﻿column,global_null_pct,Action
+calendar_updated,100.0,
+license,60.7438,
+neighborhood_overview,50.476,Replace with unknown
+neighbourhood,50.4745,Replace with unknown
+host_about,39.9956,Replace with unknown
+review_scores_value,25.1099,Replace with 0
+review_scores_location,25.1091,Replace with 0
+review_scores_checkin,25.1068,Replace with 0
+review_scores_accuracy,25.0985,Replace with 0
+review_scores_communication,25.0963,Replace with 0
+review_scores_cleanliness,25.0918,Replace with 0
+first_review,25.0827,Replace with 1900-01-01
+last_review,25.0827,Replace with 1900-01-01
+review_scores_rating,25.0827,Replace with 0
+reviews_per_month,25.0827,Replace with 0
+host_location,23.9627,Replace with unknown
+host_response_rate,22.3445,Replace with 0
+host_response_time,22.3445,Replace with 0
+estimated_revenue_l365d,21.8342,Replace with 0
+price,21.8342,Remove empty
+beds,21.3255,Replace with 0
+host_acceptance_rate,21.2757,Replace with 0
+bathrooms,21.2034,Replace with 0
+host_neighbourhood,20.5145,Replace with unknown
+neighbourhood_group_cleansed,12.9811,Replace with unknown
+bedrooms,7.3653,Replace with 0
+has_availability,7.1648,Replace with unknown
+host_is_superhost,2.4443,Replace with unknown
+description,2.4104,Replace with unknown
+host_has_profile_pic,0.9082,Replace with f
+host_identity_verified,0.9082,Replace with f
+host_listings_count,0.9082,Replace with 0
+host_picture_url,0.9082,Replace with unknown
+host_since,0.9082,Replace with 1900-01-01
+host_thumbnail_url,0.9082,Replace with unknown
+host_total_listings_count,0.9082,Replace with 0
+host_verifications,0.9082,Replace with []
+host_name,0.9067,Replace with unknown
+bathrooms_text,0.2721,Replace with unknown
+maximum_maximum_nights,0.0384,Replace with 0
+maximum_minimum_nights,0.0384,Replace with 0
+minimum_maximum_nights,0.0384,Replace with 0
+minimum_minimum_nights,0.0384,Replace with 0
+name,0.0023,Replace with unknown
+accommodates,0.0,
+amenities,0.0,
+availability_30,0.0,
+availability_365,0.0,
+availability_60,0.0,
+availability_90,0.0,
+availability_eoy,0.0,
+calculated_host_listings_count,0.0,
+calculated_host_listings_count_entire_homes,0.0,
+calculated_host_listings_count_private_rooms,0.0,
+calculated_host_listings_count_shared_rooms,0.0,
+calendar_last_scraped,0.0,
+estimated_occupancy_l365d,0.0,
+host_id,0.0,
+host_url,0.0,
+id,0.0,
+instant_bookable,0.0,
+last_scraped,0.0,
+latitude,0.0,
+listing_url,0.0,
+longitude,0.0,
+maximum_nights,0.0,
+maximum_nights_avg_ntm,0.0,
+minimum_nights,0.0,
+minimum_nights_avg_ntm,0.0,
+neighbourhood_cleansed,0.0,
+number_of_reviews,0.0,
+number_of_reviews_l30d,0.0,
+number_of_reviews_ltm,0.0,
+number_of_reviews_ly,0.0,
+picture_url,0.0,
+property_type,0.0,
+room_type,0.0,
+scrape_id,0.0,Replace with unknown
+source,0.0,

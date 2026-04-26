@@ -1,0 +1,11 @@
+Listing by city cleaning summary
+Initial observations (all city listings combined): 132677
+Initial columns (raw union across city files): 79
+Columns removed - non shared across cities: 0
+Columns removed - explicit (license, calendar_updated): 2
+Observations removed because price is null/empty: 28969
+Columns removed: 2
+Columns after column filtering (before price row filter): 78
+Final observations: 103708
+Final columns: 78
+Output file: C:\Users\belen\Documents\Projects\Airbnb\data\processed\listing\listing_by_city_cleaned.csv
