@@ -1,4 +1,4 @@
-# Ignore heavy/raw data files
+ # Ignore heavy/raw data files
 data/raw/
 data/raw/**
 !data/raw/.gitkeep
@@ -27,3 +27,8 @@ __pycache__/
 *.pyc
 *.csv
 *.gz
+
+# Whitelist: calendar cleaning pipeline deliverables (Yu Wang)
+!results/calendars/calendar_cleaning_decisions.md
+!results/calendars/calendar_dataset_README.md
+!results/calendars/calendars_cleaning_audit.csv
