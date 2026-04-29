@@ -1,8 +1,7 @@
-# Calendar Data Cleaning Decisions (Yu Wang)
+# Calendar Data Cleaning Decisions
 
 > Scope: the five-city `calendar.csv` files for the MBA706 Term Project (Hawaii / Los Angeles / Nashville / New York / San Francisco).
-> Owner: Yu Wang. Last updated: 2026-04-26.
-> A Chinese-language copy of this document is kept at `calendar_cleaning_decisions_CN.md`.
+> Last updated: 2026-04-26.
 
 ## 1. Naming and Hand-off Conventions (shared with Belu / Agostino)
 
@@ -19,15 +18,15 @@
 ## 2. Inputs and Outputs
 
 - Input: `data/Term Project/<City Name>/calendar.csv` (5 raw files).
-- Intermediate outputs: `data/processed/calendars/`
+- Outputs: `data/processed/calendars/`
   - `<city>_calendar_cleaned.csv` × 5 — row-level cleaned calendar (with a `city` column).
   - `<city>_listing_occupancy.csv` × 5 — listing-level aggregation (occupancy + price).
   - `all_cities_calendar_cleaned.csv` — the five cities concatenated (same header).
   - `all_cities_listing_occupancy.csv` — five-city listing-level merge (**primary deliverable**).
-- Audit / documentation: `results/calendars/`
   - `calendars_cleaning_audit.csv` — per-city cleaning audit (rows in/out, drop reasons, etc.).
-  - `calendar_cleaning_decisions.md` — this file.
-  - `calendar_dataset_README.md` — one-pager for the rest of the team.
+- Documentation:
+  - `scripts/cleaning/calendars/calendar_cleaning_decisions.md` — this file.
+  - `data/processed/calendars/README.md` — dataset hand-off doc for the rest of the team.
 
 ## 3. Row-level Cleaning Rules (executed inside the streaming pass)
 
