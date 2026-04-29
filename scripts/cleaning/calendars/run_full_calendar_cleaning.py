@@ -1,4 +1,4 @@
-"""Calendar cleaning pipeline for the MBA706 Term Project (Yu Wang).
+"""Calendar cleaning pipeline for the MBA706 Term Project.
 
 Reads raw Inside Airbnb calendar files from
     data/Term Project/<City Name>/calendar.csv
@@ -8,10 +8,10 @@ and produces, in a single streaming pass per city:
 * data/processed/calendars/<city>_listing_occupancy.csv (per-city, listing-level)
 * data/processed/calendars/all_cities_calendar_cleaned.csv   (merged row-level)
 * data/processed/calendars/all_cities_listing_occupancy.csv  (merged listing-level)
-* results/calendars/calendars_cleaning_audit.csv             (per-city audit)
+* data/processed/calendars/calendars_cleaning_audit.csv      (per-city audit)
 
 Cleaning rules and occupancy definition are documented in
-    results/calendars/calendar_cleaning_decisions.md
+    scripts/cleaning/calendars/calendar_cleaning_decisions.md
 """
 
 from __future__ import annotations
@@ -32,7 +32,6 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RAW_ROOT = PROJECT_ROOT / "data" / "Term Project"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed" / "calendars"
-RESULTS_DIR = PROJECT_ROOT / "results" / "calendars"
 
 CITY_NAME_MAP = {
     "Hawaii": "hawaii",
@@ -69,7 +68,7 @@ PRICE_HARD_CAP = 10_000.0
 NIGHTS_HARD_CAP = 1125
 ALL_CITIES_ROW_FILE = PROCESSED_DIR / "all_cities_calendar_cleaned.csv"
 ALL_CITIES_LISTING_FILE = PROCESSED_DIR / "all_cities_listing_occupancy.csv"
-AUDIT_FILE = RESULTS_DIR / "calendars_cleaning_audit.csv"
+AUDIT_FILE = PROCESSED_DIR / "calendars_cleaning_audit.csv"
 
 
 def load_listing_prices(city_dir: Path) -> pd.DataFrame:
@@ -466,7 +465,6 @@ def main() -> None:
     args = parser.parse_args()
 
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     if not args.no_merged_rows and ALL_CITIES_ROW_FILE.exists():
         ALL_CITIES_ROW_FILE.unlink()
