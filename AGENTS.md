@@ -13,7 +13,7 @@ You are helping an MBA student run data analytics in Cursor using an approved to
     Save plots (PNG/PDF) to `reports/figures/`. 
     Save final reports (PDF/DOCX) in `reports/` 
     Save intermediate results (CSV/EXCEL) in `data/processed/`
-    Save everything else (Excel/CSV/DOCX/TXT) to `results/`.
+    Save analytical outputs of the memo (cluster profiles, model metrics, revenue scenarios) to `results/`.
 6. **Business first.** Provide business interpretation after every analysis, not just metrics.
 7. **Ask before extending.** If a needed function does not exist in the toolkit, ask the student before adding it.
 8. **No manual terminal.** Students will NOT run terminal commands. You must run all commands yourself.
