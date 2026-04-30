@@ -17,23 +17,32 @@ from mba706_toolkit import execute_python_code, get_column_info, get_summary_sta
 
 
 def main() -> None:
-    listings_path = PROJECT_ROOT / "data" / "processed" / "listings" / "listing_cleaned.csv"
+    master_path = PROJECT_ROOT / "data" / "processed" / "master_data.csv"
 
-    load_result = load_data(str(listings_path), dataset_name="listings_cleaned")
+    load_result = load_data(str(master_path), dataset_name="master_data")
     if load_result.get("status") != "success":
         raise RuntimeError(load_result)
 
-    get_column_info("listings_cleaned")
+    get_column_info("master_data")
     get_summary_statistics(
-        "listings_cleaned",
-        columns=["price", "review_scores_rating", "reviews_per_month", "number_of_reviews"],
+        "master_data",
+        columns=[
+            "price",
+            "estimated_occupancy_l365d",
+            "estimated_revenue_l365d",
+            "occupancy_rate_proxy",
+            "review_scores_rating",
+            "reviews_per_month",
+            "number_of_reviews",
+        ],
     )
 
     code = r'''
 from pathlib import Path
+import numpy as np
+import pandas as pd
 
 project_root = Path("''' + str(PROJECT_ROOT) + r'''")
-calendar_dir = project_root / "data" / "processed" / "calendars"
 processed_dir = project_root / "data" / "processed" / "investment_decision"
 results_dir = project_root / "results" / "investment_decision"
 reports_dir = project_root / "reports" / "investment_decision"
@@ -42,106 +51,8 @@ results_dir.mkdir(parents=True, exist_ok=True)
 reports_dir.mkdir(parents=True, exist_ok=True)
 
 calendar_metrics_path = processed_dir / "step1_calendar_listing_metrics.csv"
-seasonality_path = processed_dir / "step1_calendar_city_month_metrics.csv"
-calendar_files = sorted(calendar_dir.glob("*_calendar_cleaned.csv"))
-if len(calendar_files) < 5:
-    raise FileNotFoundError(f"Expected 5 cleaned calendar files, found {len(calendar_files)}")
 
-listing_parts = []
-month_parts = []
-for calendar_file in calendar_files:
-    city_name = calendar_file.stem.replace("_calendar_cleaned", "")
-    city_listing_cache = processed_dir / f"step1_calendar_listing_metrics_{city_name}.csv"
-    city_month_cache = processed_dir / f"step1_calendar_city_month_metrics_{city_name}.csv"
-
-    if city_listing_cache.exists() and city_month_cache.exists():
-        listing_parts.append(pd.read_csv(city_listing_cache))
-        month_parts.append(pd.read_csv(city_month_cache))
-        continue
-
-    city_listing_parts = []
-    city_month_parts = []
-    try:
-        for chunk in pd.read_csv(
-            calendar_file,
-            usecols=["listing_id", "city", "date", "available", "price", "adjusted_price"],
-            chunksize=250_000,
-        ):
-            chunk["available_bool"] = chunk["available"].astype(str).str.lower().isin(["true", "t", "1"])
-            chunk["booked"] = ~chunk["available_bool"]
-            chunk["date"] = pd.to_datetime(chunk["date"], errors="coerce")
-            chunk["month"] = chunk["date"].dt.to_period("M").astype(str)
-            chunk["price"] = pd.to_numeric(chunk["price"], errors="coerce")
-            chunk["adjusted_price"] = pd.to_numeric(chunk["adjusted_price"], errors="coerce")
-            chunk["calendar_rate"] = chunk["adjusted_price"].fillna(chunk["price"])
-
-            city_listing_parts.append(
-                chunk.groupby(["city", "listing_id"], dropna=False).agg(
-                    calendar_days=("available_bool", "size"),
-                    booked_days=("booked", "sum"),
-                    available_days=("available_bool", "sum"),
-                    available_priced_days=("calendar_rate", "count"),
-                    avg_calendar_rate=("calendar_rate", "mean"),
-                    median_calendar_rate=("calendar_rate", "median"),
-                ).reset_index()
-            )
-            city_month_parts.append(
-                chunk.groupby(["city", "month"], dropna=False).agg(
-                    calendar_days=("available_bool", "size"),
-                    booked_days=("booked", "sum"),
-                    available_days=("available_bool", "sum"),
-                    avg_calendar_rate=("calendar_rate", "mean"),
-                ).reset_index()
-            )
-    except OSError as exc:
-        raise RuntimeError(
-            f"Calendar read failed for {calendar_file.name}. Re-run this script; completed city caches will be reused. "
-            f"Original error: {exc}"
-        )
-
-    city_listing_metrics = (
-        pd.concat(city_listing_parts, ignore_index=True)
-        .groupby(["city", "listing_id"], dropna=False)
-        .agg(
-            calendar_days=("calendar_days", "sum"),
-            booked_days=("booked_days", "sum"),
-            available_days=("available_days", "sum"),
-            available_priced_days=("available_priced_days", "sum"),
-            avg_calendar_rate=("avg_calendar_rate", "mean"),
-            median_calendar_rate=("median_calendar_rate", "median"),
-        )
-        .reset_index()
-    )
-    city_listing_metrics["calendar_occupancy_rate"] = (
-        city_listing_metrics["booked_days"] / city_listing_metrics["calendar_days"]
-    )
-
-    city_month_metrics = (
-        pd.concat(city_month_parts, ignore_index=True)
-        .groupby(["city", "month"], dropna=False)
-        .agg(
-            calendar_days=("calendar_days", "sum"),
-            booked_days=("booked_days", "sum"),
-            available_days=("available_days", "sum"),
-            avg_calendar_rate=("avg_calendar_rate", "mean"),
-        )
-        .reset_index()
-    )
-    city_month_metrics["monthly_occupancy_rate"] = (
-        city_month_metrics["booked_days"] / city_month_metrics["calendar_days"]
-    )
-
-    city_listing_metrics.to_csv(city_listing_cache, index=False)
-    city_month_metrics.to_csv(city_month_cache, index=False)
-    listing_parts.append(city_listing_metrics)
-    month_parts.append(city_month_metrics)
-
-calendar_listing_metrics = pd.concat(listing_parts, ignore_index=True)
-city_month_metrics = pd.concat(month_parts, ignore_index=True)
-calendar_listing_metrics.to_csv(calendar_metrics_path, index=False)
-city_month_metrics.to_csv(seasonality_path, index=False)
-
-df = _data_store["listings_cleaned"].copy()
+df = _data_store["master_data"].copy()
 df.columns = [str(col).lstrip("\ufeff") for col in df.columns]
 
 required_columns = [
@@ -158,12 +69,30 @@ required_columns = [
     "review_scores_rating",
     "reviews_per_month",
     "number_of_reviews",
+    "estimated_occupancy_l365d",
+    "estimated_revenue_l365d",
+    "availability_365",
+    "occupancy_rate_proxy",
 ]
 missing_columns = [col for col in required_columns if col not in df.columns]
 if missing_columns:
     raise ValueError(f"Missing required columns: {missing_columns}")
 
-for col in ["id", "bedrooms", "bathrooms", "beds", "price", "review_scores_rating", "reviews_per_month", "number_of_reviews"]:
+numeric_cols = [
+    "id",
+    "bedrooms",
+    "bathrooms",
+    "beds",
+    "price",
+    "review_scores_rating",
+    "reviews_per_month",
+    "number_of_reviews",
+    "estimated_occupancy_l365d",
+    "estimated_revenue_l365d",
+    "availability_365",
+    "occupancy_rate_proxy",
+]
+for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors="coerce")
 
 df["listing_id"] = df["id"]
@@ -171,17 +100,42 @@ df["city_key"] = df["City"].astype(str).str.strip().str.lower().str.replace(" ",
 df["neighbourhood_group_cleansed"] = df["neighbourhood_group_cleansed"].fillna("unknown")
 df["property_type_clean"] = df["property_type"].astype(str).str.lower()
 df["bedroom_count"] = df["bedrooms"].round()
-
-analysis = df.merge(
-    calendar_listing_metrics,
-    left_on=["city_key", "listing_id"],
-    right_on=["city", "listing_id"],
-    how="inner",
+df["calendar_days"] = 365
+df["booked_days"] = df["estimated_occupancy_l365d"].clip(lower=0, upper=365)
+df["available_days"] = df["availability_365"].clip(lower=0, upper=365)
+df["calendar_occupancy_rate"] = df["occupancy_rate_proxy"].clip(lower=0, upper=1)
+df.loc[df["calendar_occupancy_rate"].isna(), "calendar_occupancy_rate"] = (
+    df.loc[df["calendar_occupancy_rate"].isna(), "booked_days"] / 365
 )
-analysis["nightly_price"] = analysis["median_calendar_rate"].fillna(analysis["avg_calendar_rate"])
-analysis["nightly_price"] = analysis["nightly_price"].fillna(analysis["price"])
+df["avg_calendar_rate"] = np.where(
+    df["booked_days"].gt(0) & df["estimated_revenue_l365d"].gt(0),
+    df["estimated_revenue_l365d"] / df["booked_days"],
+    df["price"],
+)
+df["median_calendar_rate"] = df["avg_calendar_rate"]
+df["available_priced_days"] = df["booked_days"].where(df["estimated_revenue_l365d"].gt(0), np.nan)
+
+calendar_listing_metrics = df[
+    [
+        "city_key",
+        "listing_id",
+        "calendar_days",
+        "booked_days",
+        "available_days",
+        "available_priced_days",
+        "avg_calendar_rate",
+        "median_calendar_rate",
+        "calendar_occupancy_rate",
+    ]
+].rename(columns={"city_key": "city"})
+calendar_listing_metrics.to_csv(calendar_metrics_path, index=False)
+
+analysis = df.copy()
+analysis["nightly_price"] = analysis["median_calendar_rate"].fillna(analysis["price"])
 analysis["occupancy_rate"] = analysis["calendar_occupancy_rate"]
-analysis["annual_revenue"] = analysis["nightly_price"] * analysis["occupancy_rate"] * 365
+analysis["annual_revenue"] = analysis["estimated_revenue_l365d"]
+fallback_revenue = analysis["nightly_price"] * analysis["occupancy_rate"] * 365
+analysis["annual_revenue"] = analysis["annual_revenue"].where(analysis["annual_revenue"].gt(0), fallback_revenue)
 
 property_type_mask = analysis["property_type_clean"].str.contains(
     "condo|rental unit|home|townhouse|guest suite|serviced apartment|loft|bungalow|cottage|apartment",
@@ -302,10 +256,10 @@ with report_path.open("w", encoding="utf-8") as handle:
         "purchase prices, the budget is used as a feasibility screen rather than a true ROI calculation.\n\n"
     )
     handle.write("## Data Used\n\n")
-    handle.write("- Calendar files are the operating-performance source of truth for occupancy. They provide listing-level booked days, available days, and calendar days.\n")
-    handle.write("- Calendar price is used when available. If calendar price is missing, the cleaned listing price is used as the nightly-price fallback.\n")
-    handle.write("- Cleaned listings provide city, neighborhood, property type, bedroom count, review score, and listing attributes.\n")
-    handle.write("- Annual revenue is computed as `nightly price x calendar occupancy rate x 365`.\n\n")
+    handle.write("- `data/processed/master_data.csv` is the source of truth for this step. It already merges listing attributes with calendar-derived operating fields.\n")
+    handle.write("- `estimated_revenue_l365d` is used as observed annual revenue when available.\n")
+    handle.write("- `occupancy_rate_proxy` and `estimated_occupancy_l365d` provide listing-level occupancy information.\n")
+    handle.write("- Nightly price is inferred as `estimated revenue / estimated occupied nights` when possible; otherwise, listing `price` is used as the fallback.\n\n")
     handle.write("## Housing Feasibility Rules Used\n\n")
     handle.write("- Hawaii: studio to 1BR condo/apartment-style units.\n")
     handle.write("- New York: studio to 1BR in Manhattan; up to 2BR in outer boroughs.\n")
@@ -317,12 +271,11 @@ with report_path.open("w", encoding="utf-8") as handle:
     handle.write("- Entire home/apartment listings only.\n")
     handle.write("- Plausible property types: condo, rental unit, home, townhouse, guest suite, serviced apartment, loft, bungalow, cottage, or apartment.\n")
     handle.write("- Nightly price between $50 and $1,500.\n")
-    handle.write("- Calendar occupancy rate between 0% and 100%.\n")
+    handle.write("- Calendar-derived occupancy proxy between 0% and 100%.\n")
     handle.write("- Computed annual revenue between $1,000 and $250,000.\n")
     handle.write("- Decision-ready segments require at least 25 comparable listings and median review score of at least 4.5.\n\n")
     handle.write("## Files Created\n\n")
     handle.write("- `data/processed/investment_decision/step1_calendar_listing_metrics.csv`\n")
-    handle.write("- `data/processed/investment_decision/step1_calendar_city_month_metrics.csv`\n")
     handle.write("- `data/processed/investment_decision/step1_budget_feasible_listing_metrics.csv`\n")
     handle.write("- `data/processed/investment_decision/step1_all_budget_feasible_candidate_segments.csv`\n")
     handle.write("- `data/processed/investment_decision/step1_decision_ready_candidate_segments.csv`\n")
@@ -346,17 +299,17 @@ with report_path.open("w", encoding="utf-8") as handle:
     handle.write("\n## Interpretation\n\n")
     handle.write(
         "This step does not choose the final investment yet. It creates the defensible candidate universe using "
-        "calendar-based operating performance. The next step should use k-nearest-neighbor comparable listings to "
+        "the merged master dataset's calendar-derived operating performance. The next step should use k-nearest-neighbor comparable listings to "
         "validate whether the highest-ranked segments are supported by similar individual properties, not just by segment medians.\n"
     )
 
-print("Saved calendar-based Step 1 budget-feasible candidate segment outputs.")
+print("Saved master-data-based Step 1 budget-feasible candidate segment outputs.")
 print(processed_dir / "step1_decision_ready_candidate_segments.csv")
 print(results_dir / "step1_top_candidate_segments.csv")
 print(report_path)
 '''
 
-    result = execute_python_code(code, description="Step 1 calendar-based budget-feasible Airbnb candidate segments")
+    result = execute_python_code(code, description="Step 1 master-data-based budget-feasible Airbnb candidate segments")
     if result.get("status") != "success":
         raise RuntimeError(result)
     print(result)

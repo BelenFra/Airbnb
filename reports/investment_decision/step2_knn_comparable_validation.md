@@ -19,11 +19,11 @@ Step 1 ranked budget-feasible candidate segments. Step 2 checks whether those se
 
 ## Results
 
-- Los Angeles / Avalon / Entire condo / 2BR: Step 1 median revenue $123,823; k-NN median revenue $142,767; k-NN revenue range $126,664-$191,912; status: supported by close comps.
-- Los Angeles / Avalon / Entire home / 2BR: Step 1 median revenue $85,925; k-NN median revenue $112,128; k-NN revenue range $82,064-$128,687; status: supported by close comps.
-- Hawaii / North Kona / Entire serviced apartment / 1BR: Step 1 median revenue $66,063; k-NN median revenue $84,240; k-NN revenue range $66,063-$84,240; status: supported by close comps.
-- Los Angeles / Hollywood Hills / Entire home / 2BR: Step 1 median revenue $61,975; k-NN median revenue $83,268; k-NN revenue range $37,210-$100,140; status: supported by close comps.
-- Los Angeles / Beverly Hills / Entire rental unit / 2BR: Step 1 median revenue $54,486; k-NN median revenue $60,756; k-NN revenue range $55,144-$70,030; status: supported by close comps.
+- Los Angeles / Hollywood Hills West / Entire home / 2BR: Step 1 median revenue $47,628; k-NN median revenue $47,640; k-NN revenue range $29,319-$62,135; status: supported by close comps.
+- Los Angeles / Hollywood Hills / Entire home / 2BR: Step 1 median revenue $45,592; k-NN median revenue $37,980; k-NN revenue range $26,700-$63,270; status: weaker than segment median in close comps.
+- Los Angeles / Silver Lake / Entire home / 2BR: Step 1 median revenue $45,138; k-NN median revenue $32,706; k-NN revenue range $9,970-$49,600; status: weaker than segment median in close comps.
+- New York / Midtown / Entire rental unit / 0BR: Step 1 median revenue $45,108; k-NN median revenue $34,565; k-NN revenue range $20,120-$51,958; status: weaker than segment median in close comps.
+- Los Angeles / Manhattan Beach / Entire home / 2BR: Step 1 median revenue $43,968; k-NN median revenue $21,060; k-NN revenue range $17,066-$43,968; status: weaker than segment median in close comps.
 
 ## Interpretation
 

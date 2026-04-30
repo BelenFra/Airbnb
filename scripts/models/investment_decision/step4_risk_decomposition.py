@@ -20,7 +20,6 @@ def main() -> None:
     inputs = {
         "listing_metrics": PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step1_budget_feasible_listing_metrics.csv",
         "decision_segments": PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step1_decision_ready_candidate_segments.csv",
-        "month_metrics": PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step1_calendar_city_month_metrics.csv",
         "top_segments": PROJECT_ROOT / "results" / "investment_decision" / "step1_top_candidate_segments.csv",
         "scenarios": PROJECT_ROOT / "results" / "investment_decision" / "step3_revenue_scenarios.csv",
         "bootstrap": PROJECT_ROOT / "results" / "investment_decision" / "step3_bootstrap_revenue_uncertainty.csv",
@@ -40,6 +39,8 @@ def main() -> None:
 from pathlib import Path
 
 project_root = Path("''' + str(PROJECT_ROOT) + r'''")
+calendar_path = project_root / "data" / "processed" / "calendars" / "calendar_all_cleaned.csv"
+master_path = project_root / "data" / "processed" / "master_data.csv"
 processed_dir = project_root / "data" / "processed" / "investment_decision"
 results_dir = project_root / "results" / "investment_decision"
 reports_dir = project_root / "reports" / "investment_decision"
@@ -51,7 +52,6 @@ figures_dir.mkdir(parents=True, exist_ok=True)
 
 listings = _data_store["listing_metrics"].copy()
 segments_all = _data_store["decision_segments"].copy()
-months = _data_store["month_metrics"].copy()
 top_segments = _data_store["top_segments"].copy().head(5)
 scenarios = _data_store["scenarios"].copy()
 bootstrap = _data_store["bootstrap"].copy()
@@ -65,7 +65,6 @@ numeric_columns = [
     "calendar_days",
     "booked_days",
     "available_days",
-    "monthly_occupancy_rate",
     "comp_count",
     "median_annual_revenue",
     "p25_annual_revenue",
@@ -75,7 +74,7 @@ numeric_columns = [
     "bootstrap_ci_width",
     "segment_median_revenue",
 ]
-for frame in [listings, segments_all, months, top_segments, scenarios, bootstrap]:
+for frame in [listings, segments_all, top_segments, scenarios, bootstrap]:
     for col in numeric_columns:
         if col in frame.columns:
             frame[col] = pd.to_numeric(frame[col], errors="coerce")
@@ -87,6 +86,99 @@ def minmax(series):
     if pd.isna(low) or pd.isna(high) or high == low:
         return pd.Series(0.5, index=series.index)
     return (series - low) / (high - low)
+
+def build_monthly_calendar_metrics():
+    monthly_cache = processed_dir / "step4_calendar_city_month_metrics.csv"
+    if monthly_cache.exists():
+        return pd.read_csv(monthly_cache)
+
+    required = ["listing_id", "city", "date", "available"]
+    monthly_parts = []
+
+    for chunk in pd.read_csv(calendar_path, chunksize=500_000, low_memory=False):
+        chunk.columns = [str(col).lstrip("\ufeff") for col in chunk.columns]
+        missing = [col for col in required if col not in chunk.columns]
+        if missing:
+            raise ValueError(f"calendar_all_cleaned.csv is missing required columns: {missing}")
+
+        work = chunk[required + [col for col in ["price", "adjusted_price"] if col in chunk.columns]].copy()
+        work["city"] = work["city"].astype(str).str.strip().str.lower().str.replace(" ", "_", regex=False)
+        work["date"] = pd.to_datetime(work["date"], errors="coerce")
+        work = work.dropna(subset=["date"])
+        work["month"] = work["date"].dt.to_period("M").astype(str)
+        work["available_bool"] = work["available"].astype(str).str.lower().isin(["true", "t", "1", "yes"])
+        work["booked"] = ~work["available_bool"]
+
+        price_cols = [col for col in ["adjusted_price", "price"] if col in work.columns]
+        for col in price_cols:
+            work[col] = pd.to_numeric(work[col], errors="coerce")
+        if price_cols:
+            work["calendar_rate"] = work[price_cols[0]]
+            for col in price_cols[1:]:
+                work["calendar_rate"] = work["calendar_rate"].fillna(work[col])
+        else:
+            work["calendar_rate"] = np.nan
+
+        monthly_parts.append(
+            work.groupby(["city", "month"], dropna=False).agg(
+                calendar_days=("available_bool", "size"),
+                booked_days=("booked", "sum"),
+                available_days=("available_bool", "sum"),
+                avg_calendar_rate=("calendar_rate", "mean"),
+            ).reset_index()
+        )
+
+    monthly = (
+        pd.concat(monthly_parts, ignore_index=True)
+        .groupby(["city", "month"], dropna=False)
+        .agg(
+            calendar_days=("calendar_days", "sum"),
+            booked_days=("booked_days", "sum"),
+            available_days=("available_days", "sum"),
+            avg_calendar_rate=("avg_calendar_rate", "mean"),
+        )
+        .reset_index()
+    )
+    monthly["monthly_occupancy_rate"] = monthly["booked_days"] / monthly["calendar_days"]
+    monthly.to_csv(monthly_cache, index=False)
+    return monthly
+
+def build_scrape_freshness():
+    scrape_parts = []
+    for chunk in pd.read_csv(
+        master_path,
+        usecols=["City", "calendar_last_scraped"],
+        chunksize=250_000,
+        low_memory=False,
+    ):
+        chunk.columns = [str(col).lstrip("\ufeff") for col in chunk.columns]
+        chunk["city"] = chunk["City"].astype(str).str.strip().str.lower().str.replace(" ", "_", regex=False)
+        chunk["calendar_last_scraped"] = pd.to_datetime(chunk["calendar_last_scraped"], errors="coerce")
+        scrape_parts.append(chunk[["city", "calendar_last_scraped"]].dropna().drop_duplicates())
+
+    if scrape_parts:
+        scrape_dates = pd.concat(scrape_parts, ignore_index=True).drop_duplicates()
+        scrape_summary = scrape_dates.groupby("city", dropna=False).agg(
+            scrape_dates_observed=("calendar_last_scraped", "nunique"),
+            first_calendar_last_scraped=("calendar_last_scraped", "min"),
+            last_calendar_last_scraped=("calendar_last_scraped", "max"),
+        ).reset_index()
+        scrape_summary["scrape_window_days"] = (
+            scrape_summary["last_calendar_last_scraped"] - scrape_summary["first_calendar_last_scraped"]
+        ).dt.days
+    else:
+        scrape_summary = pd.DataFrame(columns=[
+            "city",
+            "scrape_dates_observed",
+            "first_calendar_last_scraped",
+            "last_calendar_last_scraped",
+            "scrape_window_days",
+        ])
+    scrape_summary.to_csv(processed_dir / "step4_calendar_scrape_freshness.csv", index=False)
+    return scrape_summary
+
+months = build_monthly_calendar_metrics()
+scrape_summary = build_scrape_freshness()
 
 city_systematic = months.groupby("city", dropna=False).agg(
     city_avg_monthly_occupancy=("monthly_occupancy_rate", "mean"),
@@ -107,17 +199,15 @@ city_supply = listings.groupby(["city_key", "City"], dropna=False).agg(
     city_median_occupancy=("occupancy_rate", "median"),
     city_median_annual_revenue=("annual_revenue", "median"),
 ).reset_index()
-city_systematic = city_systematic.merge(
-    city_supply,
-    left_on="city",
-    right_on="city_key",
-    how="left",
-)
+city_systematic = city_systematic.merge(city_supply, left_on="city", right_on="city_key", how="left")
+city_systematic = city_systematic.merge(scrape_summary, on="city", how="left")
 city_systematic["city_competition_score"] = minmax(np.log1p(city_systematic["city_budget_feasible_listings"]))
 city_systematic["city_seasonality_score"] = minmax(city_systematic["city_seasonality_gap"])
+city_systematic["city_scrape_freshness_score"] = minmax(city_systematic["scrape_window_days"].fillna(0))
 city_systematic["city_systematic_risk_score"] = (
-    0.55 * city_systematic["city_competition_score"]
-    + 0.45 * city_systematic["city_seasonality_score"]
+    0.50 * city_systematic["city_competition_score"]
+    + 0.40 * city_systematic["city_seasonality_score"]
+    + 0.10 * city_systematic["city_scrape_freshness_score"]
 )
 city_systematic.to_csv(processed_dir / "step4_city_systematic_risk.csv", index=False)
 
@@ -189,6 +279,9 @@ for rank, segment in enumerate(top_segments.to_dict(orient="records"), start=1):
             "bootstrap_uncertainty_ratio": bootstrap_uncertainty_ratio,
             "city_seasonality_gap": city_row["city_seasonality_gap"],
             "city_seasonality_cv": city_row["city_seasonality_cv"],
+            "calendar_last_scraped_first": city_row["first_calendar_last_scraped"],
+            "calendar_last_scraped_last": city_row["last_calendar_last_scraped"],
+            "calendar_scrape_window_days": city_row["scrape_window_days"],
             "segment_comp_count": segment["comp_count"],
             "neighborhood_budget_feasible_listings": neighborhood_row["neighborhood_budget_feasible_listings"],
             "neighborhood_median_occupancy": neighborhood_row["neighborhood_median_occupancy"],
@@ -203,17 +296,17 @@ risk["downside_risk_score"] = minmax(risk["downside_ratio"])
 risk["uncertainty_risk_score"] = minmax(risk["bootstrap_uncertainty_ratio"])
 risk["seasonality_risk_score"] = minmax(risk["city_seasonality_gap"])
 risk["competition_risk_score"] = minmax(np.log1p(risk["neighborhood_budget_feasible_listings"]))
+risk["freshness_risk_score"] = minmax(risk["calendar_scrape_window_days"].fillna(0))
 risk["regulatory_risk_score"] = risk["regulatory_proxy_score"]
 risk["overall_risk_score"] = (
-    0.25 * risk["downside_risk_score"]
-    + 0.25 * risk["uncertainty_risk_score"]
+    0.23 * risk["downside_risk_score"]
+    + 0.23 * risk["uncertainty_risk_score"]
     + 0.20 * risk["seasonality_risk_score"]
-    + 0.15 * risk["competition_risk_score"]
+    + 0.14 * risk["competition_risk_score"]
+    + 0.05 * risk["freshness_risk_score"]
     + 0.15 * risk["regulatory_risk_score"]
 )
-risk["risk_adjusted_revenue_score"] = (
-    risk["moderate_revenue"] / (1 + risk["overall_risk_score"])
-)
+risk["risk_adjusted_revenue_score"] = risk["moderate_revenue"] / (1 + risk["overall_risk_score"])
 risk = risk.sort_values("overall_risk_score", ascending=True)
 risk.to_csv(results_dir / "step4_candidate_risk_decomposition.csv", index=False)
 
@@ -226,15 +319,22 @@ with report_path.open("w", encoding="utf-8") as handle:
     handle.write("## Purpose\n\n")
     handle.write(
         "Step 4 evaluates the top investment candidates by downside revenue risk, bootstrap uncertainty, "
-        "seasonality, competition, and regulatory proxy risk. It also preserves full city and neighborhood systematic-risk tables.\n\n"
+        "calendar seasonality, competition, scrape-date freshness, and regulatory proxy risk.\n\n"
     )
+    handle.write("## Data Used\n\n")
+    handle.write("- Listing and annual revenue inputs come from `data/processed/master_data.csv` through the Step 1 outputs.\n")
+    handle.write("- Monthly seasonality comes from `data/processed/calendars/calendar_all_cleaned.csv`.\n")
+    handle.write("- `calendar_last_scraped` is used as a data-freshness/snapshot-consistency check, not as a seasonality variable.\n\n")
     handle.write("## Risk Components\n\n")
     handle.write("- Downside revenue risk: how far conservative revenue falls below moderate revenue.\n")
     handle.write("- Bootstrap uncertainty risk: width of the bootstrap median-revenue interval relative to median revenue.\n")
-    handle.write("- Seasonality risk: city-level peak-to-trough monthly occupancy gap from calendar data.\n")
+    handle.write("- Seasonality risk: city-level peak-to-trough monthly occupancy gap from the combined calendar file.\n")
     handle.write("- Competitive risk: budget-feasible listing count in the candidate neighborhood.\n")
+    handle.write("- Freshness risk: spread in `calendar_last_scraped` dates within a city.\n")
     handle.write("- Regulatory proxy risk: city-level qualitative score based on known need for short-term-rental due diligence.\n\n")
     handle.write("## Files Created\n\n")
+    handle.write("- `data/processed/investment_decision/step4_calendar_city_month_metrics.csv`\n")
+    handle.write("- `data/processed/investment_decision/step4_calendar_scrape_freshness.csv`\n")
     handle.write("- `data/processed/investment_decision/step4_city_systematic_risk.csv`\n")
     handle.write("- `data/processed/investment_decision/step4_neighborhood_systematic_risk.csv`\n")
     handle.write("- `results/investment_decision/step4_candidate_risk_decomposition.csv`\n")
@@ -243,15 +343,16 @@ with report_path.open("w", encoding="utf-8") as handle:
     for row in risk_rankings.to_dict(orient="records"):
         handle.write(
             f"- {row['candidate_segment']}: moderate revenue ${row['moderate_revenue']:,.0f}, "
+            f"seasonality gap {row['city_seasonality_gap']:.1%}, "
             f"overall risk score {row['overall_risk_score']:.2f}, "
             f"risk-adjusted revenue score ${row['risk_adjusted_revenue_score']:,.0f}. "
             f"Main regulatory note: {row['regulatory_proxy_note']}\n"
         )
     handle.write("\n## Interpretation\n\n")
     handle.write(
-        "This step does not eliminate high-revenue candidates automatically. Instead, it clarifies the tradeoff: "
-        "a candidate can have superior revenue but also higher uncertainty, seasonality, competition, or regulatory exposure. "
-        "The final recommendation should consider both moderate revenue and risk-adjusted ranking.\n"
+        "This step now separates the two sources cleanly: master data supports listing/segment economics, "
+        "while the combined calendar file supports monthly seasonality and snapshot freshness. "
+        "A candidate can have superior revenue but still carry higher uncertainty, seasonality, competition, freshness, or regulatory exposure.\n"
     )
 
 plot_risk = risk.sort_values("overall_risk_score", ascending=True)
@@ -270,17 +371,14 @@ components = risk_rankings[
         "uncertainty_risk_score",
         "seasonality_risk_score",
         "competition_risk_score",
+        "freshness_risk_score",
         "regulatory_risk_score",
     ]
 ].set_index("candidate_segment")
 fig, ax = plt.subplots(figsize=(10, 5.5))
 im = ax.imshow(components.values, aspect="auto", cmap="YlOrRd")
 ax.set_xticks(np.arange(len(components.columns)))
-ax.set_xticklabels(
-    ["Downside", "Uncertainty", "Seasonality", "Competition", "Regulatory"],
-    rotation=35,
-    ha="right",
-)
+ax.set_xticklabels(["Downside", "Uncertainty", "Seasonality", "Competition", "Freshness", "Regulatory"], rotation=35, ha="right")
 ax.set_yticks(np.arange(len(components.index)))
 ax.set_yticklabels(components.index)
 ax.set_title("Step 4: Risk Component Heatmap")
