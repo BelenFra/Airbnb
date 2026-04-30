@@ -1,0 +1,7 @@
+cluster,n_listings,median_price,mean_price,median_occupancy,mean_occupancy,median_accommodates,median_bedrooms,median_bathrooms,median_min_nights,est_annual_revenue_proxy,share_pct,top_room_type,top_city,cluster_name
+5,29095,125.0,161.0,0.107,0.17,2.0,1.0,1.0,30.0,4882.0,28.3,Entire home/apt,New York,Long-stay focused
+1,18242,136.0,165.0,0.762,0.764,2.0,1.0,1.0,3.0,37826.0,17.7,Entire home/apt,Los Angeles,Budget high-occupancy studio
+4,24473,153.0,179.0,0.164,0.188,3.0,1.0,1.0,1.0,9159.0,23.8,Entire home/apt,Hawaii,General mid-tier
+0,18379,312.0,463.0,0.348,0.392,6.0,2.0,2.0,2.0,39630.0,17.9,Entire home/apt,Hawaii,Premium mid-size - active
+2,10660,395.0,621.0,0.164,0.24,8.0,4.0,3.0,3.0,23645.0,10.4,Entire home/apt,Los Angeles,Premium mid-size - slow-turn
+3,2060,1424.0,2345.0,0.197,0.262,12.0,6.0,5.5,3.0,102393.0,2.0,Entire home/apt,Los Angeles,Luxury large home

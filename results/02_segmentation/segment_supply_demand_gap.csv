@@ -1,0 +1,31 @@
+City,cluster,n_listings,median_occupancy,supply_share_in_city,status
+Hawaii,1,5067,0.7726027397260274,0.155,Hot & crowded — competitive
+Hawaii,3,684,0.3726027397260274,0.021,Underserved — opportunity
+Hawaii,0,10699,0.3424657534246575,0.327,Hot & crowded — competitive
+Hawaii,2,2685,0.2602739726027397,0.082,Underserved — opportunity
+Hawaii,5,2001,0.2082191780821917,0.061,Underserved — opportunity
+Hawaii,4,11533,0.2027397260273972,0.353,Oversupplied — risk
+Los Angeles,1,6324,0.7616438356164383,0.172,Hot & crowded — competitive
+Los Angeles,0,4810,0.3753424657534246,0.131,Hot & crowded — competitive
+Los Angeles,2,4778,0.1095890410958904,0.13,Cold & thin — niche
+Los Angeles,4,7747,0.0958904109589041,0.211,Oversupplied — risk
+Los Angeles,5,12002,0.0794520547945205,0.327,Oversupplied — risk
+Los Angeles,3,1061,0.0520547945205479,0.029,Cold & thin — niche
+Nashville,1,831,0.736986301369863,0.125,Underserved — opportunity
+Nashville,0,1225,0.2630136986301369,0.185,Hot & crowded — competitive
+Nashville,3,234,0.1452054794520547,0.035,Cold & thin — niche
+Nashville,5,557,0.1397260273972602,0.084,Cold & thin — niche
+Nashville,2,2081,0.1123287671232876,0.314,Oversupplied — risk
+Nashville,4,1702,0.0958904109589041,0.257,Oversupplied — risk
+New York,1,4531,0.7561643835616438,0.215,Hot & crowded — competitive
+New York,0,965,0.4246575342465753,0.046,Underserved — opportunity
+New York,3,53,0.2082191780821917,0.003,Underserved — opportunity
+New York,4,1959,0.1780821917808219,0.093,Cold & thin — niche
+New York,2,831,0.1150684931506849,0.039,Cold & thin — niche
+New York,5,12771,0.1123287671232876,0.605,Oversupplied — risk
+San Francisco,1,1489,0.7808219178082192,0.258,Hot & crowded — competitive
+San Francisco,0,680,0.44794520547945205,0.118,Underserved — opportunity
+San Francisco,3,28,0.2931506849315068,0.005,Underserved — opportunity
+San Francisco,2,285,0.210958904109589,0.049,Underserved — opportunity
+San Francisco,5,1764,0.2082191780821917,0.305,Hot & crowded — competitive
+San Francisco,4,1532,0.14657534246575335,0.265,Oversupplied — risk
