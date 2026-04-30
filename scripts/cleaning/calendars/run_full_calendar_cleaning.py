@@ -1,14 +1,14 @@
 """Calendar cleaning pipeline for the MBA706 Term Project.
 
 Reads raw Inside Airbnb calendar files from
-    data/raw/<City Name>/calendar.csv
+    data/raw/calendars/calendar_<snake_city>.csv
 and produces, in a single streaming pass per city:
 
 * data/processed/calendar/<city>/calendar_<city>_cleaned.csv   (per-city, row-level, optional)
 * data/processed/calendar/<city>/occupation_<city>_cleaned.csv (per-city, listing-level)
 * data/processed/calendar_all_cleaned.csv                      (merged row-level, optional)
 * data/processed/occupation_all_cleaned.csv                    (merged listing-level)
-* results/calendars/calendars_cleaning_audit.csv             (per-city audit)
+* results/01_market_analysis/calendars/calendars_cleaning_audit.csv             (per-city audit)
 
 Cleaning rules and occupancy definition are documented in
     scripts/cleaning/calendars/calendar_cleaning_decisions.md
@@ -20,6 +20,7 @@ Listing prices for revenue estimation come from the cleaned listings master:
 from __future__ import annotations
 
 import argparse
+import csv
 import os
 import re
 import sys
@@ -39,17 +40,24 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 RAW_ROOT = PROJECT_ROOT / "data" / "raw"
+RAW_CALENDARS_DIR = RAW_ROOT / "calendars"
 PROCESSED_ROOT = PROJECT_ROOT / "data" / "processed"
 STANDARD_CALENDAR_DIR = PROJECT_ROOT / "data" / "processed" / "calendar"
-RESULTS_DIR = PROJECT_ROOT / "results" / "calendars"
+RESULTS_DIR = PROJECT_ROOT / "results" / "01_market_analysis" / "calendars"
 
-CITY_NAME_MAP = {
-    "Hawaii": "hawaii",
-    "Los Angeles": "los_angeles",
-    "Nashville": "nashville",
-    "New York": "new_york",
-    "San Francisco": "san_francisco",
+CITY_LABEL_BY_SNAKE = {
+    "hawaii": "Hawaii",
+    "los_angeles": "Los Angeles",
+    "nashville": "Nashville",
+    "new_york": "New York",
+    "san_francisco": "San Francisco",
 }
+
+# Inverse direction (label -> snake). Restored on purpose: we need this every
+# time we read another layer that still carries the human-readable city label
+# (e.g. the listings master uses `City = "Los Angeles"` today). Keep the two
+# dicts in sync; do not duplicate values manually.
+CITY_NAME_MAP = {label: snake for snake, label in CITY_LABEL_BY_SNAKE.items()}
 
 EXPECTED_COLUMNS = [
     "listing_id",
@@ -74,6 +82,12 @@ OUTPUT_ROW_COLUMNS = [
 
 CHUNK_SIZE = 200_000
 PRICE_CLEAN_PATTERN = re.compile(r"[^0-9.\-]")
+# Outlier hard caps (restored from PR #1 / commit 9de6204 by Yu Wang).
+# Documented in scripts/cleaning/calendars/calendar_cleaning_decisions.md §3.8.
+# These are *platform-level* sanity caps (not statistical clipping). Per-city
+# quantile-based clipping for modeling stays out of the cleaner on purpose.
+PRICE_HARD_CAP = 10_000.0
+NIGHTS_HARD_CAP = 1125
 ALL_CITIES_ROW_FILE = PROCESSED_ROOT / "calendar_all_cleaned.csv"
 ALL_CITIES_LISTING_FILE = PROJECT_ROOT / "data" / "processed" / "occupation_all_cleaned.csv"
 AUDIT_FILE = RESULTS_DIR / "calendars_cleaning_audit.csv"
@@ -82,7 +96,7 @@ MISSING_TEXT_VALUES = {"": pd.NA, "nan": pd.NA, "None": pd.NA}
 RANDOM_STATE = 42
 
 
-def load_listing_prices(city_dir: Path) -> pd.DataFrame:
+def load_listing_prices(city_label: str) -> pd.DataFrame:
     """Read cleaned listings and return [listing_id, listing_price] for one city.
 
     Calendar price columns are empty in the raw data, so revenue estimation uses
@@ -100,10 +114,11 @@ def load_listing_prices(city_dir: Path) -> pd.DataFrame:
         encoding="utf-8-sig",
         low_memory=False,
     )
-    df = df.loc[df["City"].eq(city_dir.name), ["id", "price"]].copy()
+    df = df.loc[df["City"].eq(city_label), ["id", "price"]].copy()
     df = df.rename(columns={"id": "listing_id", "price": "listing_price"})
     df["listing_id"] = normalize_listing_id(df["listing_id"])
     df["listing_price"] = pd.to_numeric(df["listing_price"], errors="coerce")
+    df.loc[df["listing_price"] > PRICE_HARD_CAP, "listing_price"] = pd.NA
     df = df.dropna(subset=["listing_id"])
     return df[["listing_id", "listing_price"]].drop_duplicates("listing_id")
 
@@ -157,25 +172,32 @@ def normalize_available(series: pd.Series) -> pd.Series:
 
 
 def discover_cities(raw_root: Path, cities_filter: list[str] | None) -> list[tuple[str, str, Path]]:
+    """Discover raw calendar files under data/raw/calendars/calendar_<snake>.csv.
+
+    Returns a list of (city_snake, city_label, csv_path) tuples.
+    """
+    calendars_dir = raw_root / "calendars"
+    if not calendars_dir.exists():
+        raise FileNotFoundError(
+            f"Raw calendars directory not found: {calendars_dir}. "
+            "Expected layout: data/raw/calendars/calendar_<snake_city>.csv"
+        )
+
     pairs: list[tuple[str, str, Path]] = []
-    if not raw_root.exists():
-        raise FileNotFoundError(f"Raw root not found: {raw_root}")
-    for city_dir in sorted(raw_root.iterdir()):
-        if not city_dir.is_dir():
-            continue
-        city_snake = CITY_NAME_MAP.get(city_dir.name)
-        if not city_snake:
-            continue
-        csv_path = city_dir / "calendar.csv"
-        if not csv_path.exists():
-            print(f"WARN: missing {csv_path}")
+    for csv_path in sorted(calendars_dir.glob("calendar_*.csv")):
+        city_snake = csv_path.stem.removeprefix("calendar_")
+        city_label = CITY_LABEL_BY_SNAKE.get(city_snake)
+        if not city_label:
+            print(f"WARN: unrecognized city snake '{city_snake}' for file {csv_path.name}; skipping")
             continue
         if cities_filter and city_snake not in cities_filter:
             continue
-        pairs.append((city_snake, city_dir.name, csv_path))
+        pairs.append((city_snake, city_label, csv_path))
+
     if not pairs:
         raise FileNotFoundError(
-            f"No calendar.csv files found under {raw_root} for the configured city map."
+            f"No calendar_<city>.csv files matched under {calendars_dir} "
+            f"for the configured cities {sorted(CITY_LABEL_BY_SNAKE)}."
         )
     return pairs
 
@@ -204,7 +226,6 @@ def process_city(
     city_snake: str,
     city_label: str,
     csv_file: Path,
-    city_dir: Path,
     write_row_file: bool,
     write_merged: bool,
     merged_first_write: list[bool],
@@ -227,6 +248,9 @@ def process_city(
     missing_required_rows_removed = 0
     invalid_date_rows_removed = 0
     invalid_available_rows_removed = 0
+    price_clipped_count = 0
+    min_nights_clipped_count = 0
+    max_nights_clipped_count = 0
     available_true_rows = 0
     available_false_rows = 0
     price_missing_before = 0
@@ -274,8 +298,26 @@ def process_city(
             filtered["price"] = normalize_price(filtered["price"])
             filtered["adjusted_price"] = normalize_price(filtered["adjusted_price"])
 
+            price_clip_mask = filtered["price"].notna() & (filtered["price"] > PRICE_HARD_CAP)
+            price_clipped_count += int(price_clip_mask.sum())
+            filtered.loc[price_clip_mask, "price"] = pd.NA
+
+            adj_clip_mask = filtered["adjusted_price"].notna() & (filtered["adjusted_price"] > PRICE_HARD_CAP)
+            filtered.loc[adj_clip_mask, "adjusted_price"] = pd.NA
+
             filtered["minimum_nights"] = pd.to_numeric(filtered["minimum_nights"], errors="coerce")
             filtered["maximum_nights"] = pd.to_numeric(filtered["maximum_nights"], errors="coerce")
+
+            min_clip_mask = filtered["minimum_nights"].notna() & (
+                (filtered["minimum_nights"] < 1) | (filtered["minimum_nights"] > NIGHTS_HARD_CAP)
+            )
+            max_clip_mask = filtered["maximum_nights"].notna() & (
+                (filtered["maximum_nights"] < 1) | (filtered["maximum_nights"] > NIGHTS_HARD_CAP)
+            )
+            min_nights_clipped_count += int(min_clip_mask.sum())
+            max_nights_clipped_count += int(max_clip_mask.sum())
+            filtered["minimum_nights"] = filtered["minimum_nights"].clip(lower=1, upper=NIGHTS_HARD_CAP)
+            filtered["maximum_nights"] = filtered["maximum_nights"].clip(lower=1, upper=NIGHTS_HARD_CAP)
             filtered["minimum_nights"] = filtered["minimum_nights"].astype("Int64")
             filtered["maximum_nights"] = filtered["maximum_nights"].astype("Int64")
 
@@ -337,6 +379,9 @@ def process_city(
                     index=False,
                     header=chunk_index == 0,
                     encoding="utf-8-sig",
+                    quoting=csv.QUOTE_ALL,
+                    quotechar='"',
+                    escapechar="\\",
                 )
 
             if write_merged:
@@ -348,6 +393,9 @@ def process_city(
                     index=False,
                     header=first_write,
                     encoding="utf-8-sig",
+                    quoting=csv.QUOTE_ALL,
+                    quotechar='"',
+                    escapechar="\\",
                 )
                 merged_first_write[0] = False
 
@@ -369,7 +417,7 @@ def process_city(
         listing_table["unavailability_rate"] = listing_table["n_days_unavailable"] / n_days
         listing_table["occupancy_rate_proxy"] = listing_table["unavailability_rate"]
 
-        prices = load_listing_prices(city_dir)
+        prices = load_listing_prices(city_label)
         listing_table = listing_table.merge(prices, on="listing_id", how="left")
         listings_with_price = int(listing_table["listing_price"].notna().sum())
 
@@ -394,7 +442,14 @@ def process_city(
             "est_annual_revenue_proxy",
         ]
         listing_table = listing_table[listing_columns]
-        listing_table.to_csv(output_listing_file, index=False, encoding="utf-8-sig")
+        listing_table.to_csv(
+            output_listing_file,
+            index=False,
+            encoding="utf-8-sig",
+            quoting=csv.QUOTE_ALL,
+            quotechar='"',
+            escapechar="\\",
+        )
 
     rows_removed_total = rows_in - rows_out
     percent_removed = 0 if rows_in == 0 else round((rows_removed_total / rows_in) * 100, 2)
@@ -429,6 +484,9 @@ def process_city(
         "missing_required_rows_removed": missing_required_rows_removed,
         "invalid_date_rows_removed": invalid_date_rows_removed,
         "invalid_available_rows_removed": invalid_available_rows_removed,
+        "price_clipped_count": price_clipped_count,
+        "min_nights_clipped_count": min_nights_clipped_count,
+        "max_nights_clipped_count": max_nights_clipped_count,
         "calendar_price_missing_before": price_missing_before,
         "calendar_adjusted_price_missing_before": adjusted_price_missing_before,
         "calendar_price_non_null_after": price_non_null_after,
@@ -452,7 +510,14 @@ def merge_listing_tables(audit_rows: list[dict]) -> None:
     if not frames:
         return
     merged = pd.concat(frames, ignore_index=True)
-    merged.to_csv(ALL_CITIES_LISTING_FILE, index=False, encoding="utf-8-sig")
+    merged.to_csv(
+        ALL_CITIES_LISTING_FILE,
+        index=False,
+        encoding="utf-8-sig",
+        quoting=csv.QUOTE_ALL,
+        quotechar='"',
+        escapechar="\\",
+    )
 
 
 def main() -> None:
@@ -465,7 +530,7 @@ def main() -> None:
     parser.add_argument(
         "--cities",
         nargs="*",
-        choices=sorted(set(CITY_NAME_MAP.values())),
+        choices=sorted(CITY_LABEL_BY_SNAKE.keys()),
         default=None,
         help="Optional subset of cities (snake_case) to process. Defaults to all five.",
     )
@@ -496,13 +561,11 @@ def main() -> None:
     merged_first_write = [True]
 
     for city_snake, city_label, csv_file in pairs:
-        city_dir = csv_file.parent
         print(f"\n=== {city_label} ({city_snake}) -> {csv_file.relative_to(PROJECT_ROOT)} ===")
         result = process_city(
             city_snake,
             city_label,
             csv_file,
-            city_dir,
             write_row_file=not args.occupation_only,
             write_merged=not args.no_merged_rows and not args.occupation_only,
             merged_first_write=merged_first_write,
@@ -520,7 +583,14 @@ def main() -> None:
     merge_listing_tables(audit_rows)
 
     audit_df = pd.DataFrame(audit_rows)
-    audit_df.to_csv(AUDIT_FILE, index=False, encoding="utf-8-sig")
+    audit_df.to_csv(
+        AUDIT_FILE,
+        index=False,
+        encoding="utf-8-sig",
+        quoting=csv.QUOTE_ALL,
+        quotechar='"',
+        escapechar="\\",
+    )
     print(f"\nSaved audit summary to {AUDIT_FILE.relative_to(PROJECT_ROOT)}")
     print(f"Saved merged occupation table to {ALL_CITIES_LISTING_FILE.relative_to(PROJECT_ROOT)}")
     if not args.no_merged_rows and not args.occupation_only:

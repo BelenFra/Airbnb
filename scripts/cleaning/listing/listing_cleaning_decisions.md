@@ -1,4 +1,7 @@
-# Listing Cleaning Logic
+# Listing Data Cleaning Decisions
+
+> Scope: the five-city `listings.csv` files for the MBA706 Term Project (Hawaii / Los Angeles / Nashville / New York / San Francisco).
+> Companion memos: `scripts/cleaning/calendars/calendar_cleaning_decisions.md` (calendar pipeline) and `scripts/cleaning/reviews/review_cleaning_decisions.md` (reviews pipeline).
 
 This folder contains the cleaning logic for raw Airbnb `listings.csv` files. The EDA notebook is no longer used to execute this script or create pipeline inputs; it only profiles the raw listing data. Pipeline execution is handled by `scripts/cleaning/run_cleaning_pipeline.py`.
 
@@ -52,7 +55,7 @@ The merge phase:
 4. Drops `license` and `calendar_updated`.
 5. Adds a `City` column using the source folder name.
 6. Removes rows where `price` is missing or empty.
-7. Writes listing merge audit results to `results/listing/listing_by_city_cleaning_summary.txt`.
+7. Writes listing merge audit results to `results/01_market_analysis/listing/listing_by_city_cleaning_summary.txt`.
 
 Latest audit summary:
 

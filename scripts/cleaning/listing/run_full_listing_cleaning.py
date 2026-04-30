@@ -18,7 +18,7 @@ Primary outputs
 ---------------
 - data/processed/listing/<city>/listing_<city>_cleaned.csv
 - data/processed/listing_all_cleaned.csv
-- results/listing/listing_by_city_cleaning_summary.txt
+- results/01_market_analysis/listing/listing_by_city_cleaning_summary.txt
 
 Execution
 ---------
@@ -31,6 +31,7 @@ consumed by this script.
 from __future__ import annotations
 
 import argparse
+import csv
 import os
 import sys
 from pathlib import Path
@@ -106,6 +107,20 @@ INTERMEDIATE_ROOT = LISTING_ROOT / "_intermediate"
 MERGED_BEFORE_NULLS_FILE = INTERMEDIATE_ROOT / "listing_merged_before_nulls.csv"
 LISTING_ALL_FILE = PROCESSED_ROOT / "listing_all_cleaned.csv"
 LISTING_README = Path(__file__).with_name("README.md")
+
+RAW_LISTING_DIR = PROJECT_ROOT / "data" / "raw" / "listing"
+CITY_LABEL_BY_SNAKE = {
+    "hawaii": "Hawaii",
+    "los_angeles": "Los Angeles",
+    "nashville": "Nashville",
+    "new_york": "New York",
+    "san_francisco": "San Francisco",
+}
+
+# Inverse direction (label -> snake). Useful whenever we ingest data that uses
+# the human-readable label and we want to coerce it into the project's
+# snake_case city token. Keep in sync with CITY_LABEL_BY_SNAKE.
+CITY_NAME_MAP = {label: snake for snake, label in CITY_LABEL_BY_SNAKE.items()}
 
 STRING_COLUMNS = {
     "id",
@@ -285,34 +300,48 @@ def build_action_map() -> Dict[str, str]:
     """Return the embedded LISTING_NULL_ACTIONS rules as the only source of truth.
 
     The cleaner intentionally does not read EDA artifacts: rules live in code,
-    documented in scripts/cleaning/listing/README.md, so behavior is reviewable
+    documented in scripts/cleaning/listing/listing_cleaning_decisions.md, so behavior is reviewable
     via version control rather than a side-channel CSV.
     """
     return dict(LISTING_NULL_ACTIONS)
 
 
 def run_merge_phase() -> None:
-    data_root = PROJECT_ROOT / "data" / "raw"
+    """Merge per-city raw listings into one cleaned dataset.
+
+    Reads from data/raw/listing/listings_<snake_city>.csv (Inside Airbnb layout
+    used in this repo). The City column is written using the human-readable
+    label (e.g. "Los Angeles") so it joins with calendar/review pipelines.
+    """
     results_root = PROJECT_ROOT / "results"
-    listing_results_root = results_root / "listing"
+    listing_results_root = results_root / "01_market_analysis" / "listing"
     PROCESSED_ROOT.mkdir(parents=True, exist_ok=True)
     LISTING_ROOT.mkdir(parents=True, exist_ok=True)
     INTERMEDIATE_ROOT.mkdir(parents=True, exist_ok=True)
     results_root.mkdir(parents=True, exist_ok=True)
     listing_results_root.mkdir(parents=True, exist_ok=True)
 
-    city_dirs = sorted([p for p in data_root.iterdir() if p.is_dir()])
+    if not RAW_LISTING_DIR.exists():
+        raise FileNotFoundError(
+            f"Raw listing directory not found: {RAW_LISTING_DIR}. "
+            "Expected layout: data/raw/listing/listings_<snake_city>.csv"
+        )
+
+    city_files: list[tuple[str, str, Path]] = []
+    for csv_path in sorted(RAW_LISTING_DIR.glob("listings_*.csv")):
+        city_snake = csv_path.stem.removeprefix("listings_")
+        city_label = CITY_LABEL_BY_SNAKE.get(city_snake)
+        if not city_label:
+            print(f"WARN: unrecognized city snake '{city_snake}' for file {csv_path.name}; skipping")
+            continue
+        city_files.append((city_snake, city_label, csv_path))
+
     city_frames: Dict[str, pd.DataFrame] = {}
     initial_obs = 0
     column_sets: list[set] = []
 
-    for city_dir in city_dirs:
-        city = city_dir.name
-        listings_path = city_dir / "listings.csv"
-        if not listings_path.exists():
-            continue
-
-        load_result = load_data(str(listings_path), dataset_name=f"{city.lower().replace(' ', '_')}_listings_cleaning")
+    for city_snake, city_label, listings_path in city_files:
+        load_result = load_data(str(listings_path), dataset_name=f"{city_snake}_listings_cleaning")
         if load_result.get("status") != "success":
             raise RuntimeError(f"Failed to load {listings_path}: {load_result}")
 
@@ -323,10 +352,13 @@ def run_merge_phase() -> None:
         for col in df.columns:
             df[col] = coerce_to_dtype(df[col], dtype_for_column(col))
 
-        city_frames[city] = df
+        city_frames[city_label] = df
 
     if not city_frames:
-        raise RuntimeError("No city listings.csv files found in data/raw.")
+        raise RuntimeError(
+            f"No listings_<city>.csv files found in {RAW_LISTING_DIR} for the configured cities "
+            f"{sorted(CITY_LABEL_BY_SNAKE)}."
+        )
 
     raw_union_columns = sorted(set.union(*column_sets))
     shared_columns = sorted(set.intersection(*column_sets))
@@ -352,7 +384,14 @@ def run_merge_phase() -> None:
     final_obs = len(combined)
     final_cols = len(combined.columns)
 
-    combined.to_csv(MERGED_BEFORE_NULLS_FILE, index=False, encoding="utf-8-sig")
+    combined.to_csv(
+        MERGED_BEFORE_NULLS_FILE,
+        index=False,
+        encoding="utf-8-sig",
+        quoting=csv.QUOTE_ALL,
+        quotechar='"',
+        escapechar="\\",
+    )
 
     summary_txt = listing_results_root / "listing_by_city_cleaning_summary.txt"
     with open(summary_txt, "w", encoding="utf-8") as f:
@@ -404,7 +443,14 @@ def run_null_phase() -> None:
     total_cells_null_after = int(df.isna().sum().sum())
 
     LISTING_ALL_FILE.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(LISTING_ALL_FILE, index=False, encoding="utf-8-sig")
+    df.to_csv(
+        LISTING_ALL_FILE,
+        index=False,
+        encoding="utf-8-sig",
+        quoting=csv.QUOTE_ALL,
+        quotechar='"',
+        escapechar="\\",
+    )
 
     if "City" not in df.columns:
         raise ValueError("Expected City column in listing data before writing per-city outputs.")
@@ -412,7 +458,14 @@ def run_null_phase() -> None:
         slug = city_slug(str(city))
         output_file = LISTING_ROOT / slug / f"listing_{slug}_cleaned.csv"
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        city_df.to_csv(output_file, index=False, encoding="utf-8-sig")
+        city_df.to_csv(
+            output_file,
+            index=False,
+            encoding="utf-8-sig",
+            quoting=csv.QUOTE_ALL,
+            quotechar='"',
+            escapechar="\\",
+        )
 
     print("Null replacement phase completed.")
     print(f"Input rows: {initial_rows}; output rows: {final_rows}")
