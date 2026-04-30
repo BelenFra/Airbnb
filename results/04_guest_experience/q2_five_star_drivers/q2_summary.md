@@ -17,17 +17,62 @@ Sub-scores are **correlated** with each other; coefficients are **associative**,
 - `q2_subscore_importance_ranking.csv` — logistic coefficients and RF importance.
 - `q2_subscore_correlation_with_overall.csv` — pairwise correlation with overall rating.
 
-### Logistic coefficients (test metrics in run log)
+### Logistic regression — metrics
 
-```text
-{'status': 'success', 'intercept': -73.8123, 'coefficients': {'review_scores_cleanliness': 5.1827, 'review_scores_checkin': 2.6021, 'review_scores_communication': 5.0111, 'review_scores_location': 2.3485}, 'training_accuracy': 0.8184, 'training_auc': 0.8998, 'training_confusion_matrix': {'tn': 21425, 'fp': 6627, 'fn': 3488, 'tp': 24158}, 'validation_accuracy': 0.8298, 'validation_auc': 0.9056, 'validation_confusion_matrix': {'tn': 4609, 'fp': 1327, 'fn': 705, 'tp': 5295}, 'test_accuracy': 0.8243, 'test_auc': 0.9053}
-```
+| metric | value |
+| --- | --- |
+| intercept | -73.8123 |
+| test_accuracy | 0.8243 |
+| test_auc | 0.9053 |
+| training_accuracy | 0.8184 |
+| training_auc | 0.8998 |
+| validation_accuracy | 0.8298 |
+| validation_auc | 0.9056 |
 
-### Random Forest (excerpt)
 
-```text
-{'test_accuracy': 0.8446, 'feature_importance': {'review_scores_cleanliness': 0.4315, 'review_scores_communication': 0.26, 'review_scores_checkin': 0.1675, 'review_scores_location': 0.141}}
-```
+### Logistic regression — coefficients
+
+| feature | coefficient |
+| --- | --- |
+| review_scores_cleanliness | 5.1827 |
+| review_scores_communication | 5.0111 |
+| review_scores_checkin | 2.6021 |
+| review_scores_location | 2.3485 |
+
+
+### Logistic regression — Training confusion (TN / FP / FN / TP)
+
+| TN | FP | FN | TP |
+| --- | --- | --- | --- |
+| 21425 | 6627 | 3488 | 24158 |
+
+
+### Logistic regression — Validation confusion (TN / FP / FN / TP)
+
+| TN | FP | FN | TP |
+| --- | --- | --- | --- |
+| 4609 | 1327 | 705 | 5295 |
+
+
+### Random Forest — metrics
+
+| metric | value |
+| --- | --- |
+| n_estimators | 150.0 |
+| test_accuracy | 0.8446 |
+| training_accuracy | 0.9336 |
+| validation_accuracy | 0.8442 |
+
+
+### Random Forest — feature importance
+
+| feature | importance |
+| --- | --- |
+| review_scores_cleanliness | 0.4315 |
+| review_scores_communication | 0.26 |
+| review_scores_checkin | 0.1675 |
+| review_scores_location | 0.141 |
+
 
 ## Business interpretation
 

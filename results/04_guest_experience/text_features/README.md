@@ -15,6 +15,6 @@ Artifacts produced by **`scripts/models/text_analysis/run_hierarchical_text_mini
 | `city_corpus_top_terms.csv` | Top TF–IDF terms per market |
 | `city_sentiment_summary.csv` | Mean TextBlob polarity by `City` |
 
-Large binary/CSV outputs may be git-ignored; this README is tracked.
+**Git:** Tracked here are small, reproducible sidecars: `README.md`, listing/city **vocabularies** (`.json`), `city_corpus_tfidf_rows.csv`, `city_corpus_top_terms.csv`. **Not** tracked (regenerate with the pipeline): `*.npz`, `listing_city_deviation_terms.csv`, `listing_documents_meta.csv`, `listing_tfidf_row_index.csv` — same regeneration step as the listing TF–IDF matrix.
 
 **Inputs:** `data/processed/reviews_all_cleaned.csv` (or `all_reviews_cleaned.csv`) + `data/processed/master_data.csv`.

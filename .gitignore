@@ -1,5 +1,9 @@
 # Heavy data files are NOT tracked in git (multi-GB CSVs).
-# We keep folder structure (.gitkeep) and small docs/audits (READMEs, *_cleaning_audit.csv).
+# GitHub rejects blobs roughly >100 MB (and warns well below that). `.gitignore`
+# cannot filter by file size — block risky CSV classes by path pattern below instead.
+# We keep folder structure (.gitkeep) and small docs/audits (READMEs, *_cleaning_audit.csv,
+# market/segment summaries under results/). Large masters, merged tables, per-city *_cleaned.csv,
+# and investment_decision/*.csv are ignored explicitly below.
 # `**` means everything recursively; whitelist with !path/.
 
 # ----- data/raw -----
@@ -34,12 +38,39 @@ data/processed/**
 # Text-mining artefacts too large for GitHub (regenerate via scripts/models/text_analysis/)
 results/04_guest_experience/text_features/*.npz
 results/04_guest_experience/text_features/listing_city_deviation_terms.csv
+# Listing-level indices / metadata (~1 row per listing; regenerated with listing_tfidf_matrix.npz)
+results/04_guest_experience/text_features/listing_documents_meta.csv
+results/04_guest_experience/text_features/listing_tfidf_row_index.csv
+
+# ----- large / regenerable CSVs (multi-MB–GB; never commit) -----
+# Merged masters and per-city cleaned exports (cleaning pipeline / local copies anywhere in the tree).
+**/listing_all_cleaned.csv
+**/reviews_all_cleaned.csv
+**/all_reviews_cleaned.csv
+**/master_data.csv
+**/calendar_all_cleaned.csv
+**/occupation_all_cleaned.csv
+**/calendar_*_cleaned.csv
+**/occupation_*_cleaned.csv
+**/listing_*_cleaned.csv
+**/reviews_*_cleaned.csv
+
+# Investment-decision quantitative outputs (wide tables; regenerate via scripts/models/investment_decision/).
+results/investment_decision/**/*.csv
+data/processed/investment_decision/**/*.csv
+
 results/01_market_analysis/reviews/**
 !results/01_market_analysis/reviews/.gitkeep
+!results/01_market_analysis/reviews/reviews_cleaning_audit.csv
 results/01_market_analysis/calendars/**
 !results/01_market_analysis/calendars/.gitkeep
+!results/01_market_analysis/calendars/calendars_cleaning_audit.csv
 reports/reviews/**
 reports/calendars/**
+
+# Legacy stray audit folders — audits belong under results/01_market_analysis/{reviews,calendars}/
+results/reviews/**
+results/calendars/**
 
 # ----- local / OS artifacts -----
 .cache/
@@ -49,6 +80,9 @@ __pycache__/
 venv/
 .DS_Store
 **/.DS_Store
+
+# Notebook superseded by scripts/04_guest_experience/run_guest_experience_charts.py
+results/04_guest_experience/guest_experience_charts.ipynb
 
 # ----- internal-only docs -----
 HOW_TO_USE_DRIVE_FOLDER.md

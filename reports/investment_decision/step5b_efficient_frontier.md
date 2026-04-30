@@ -14,7 +14,7 @@ This extension turns the Step 5 portfolio table into a simple efficient frontier
 ## Files Created
 
 - `results/investment_decision/step5b_efficient_frontier_portfolios.csv`
-- `reports/figures/step5b_efficient_frontier.png`
+- `reports/figures/05_investment_decision/step5b_efficient_frontier.png`
 
 ## Key Frontier Options
 

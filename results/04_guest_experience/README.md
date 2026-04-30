@@ -14,3 +14,4 @@ Structured like `results/01_market_analysis/`: one folder per question with `q*_
 
 - Text mining: `scripts/models/text_analysis/run_hierarchical_text_mining.py`
 - This synthesis: `scripts/04_guest_experience/run_guest_experience_questions.py`
+- Charts from CSVs: `scripts/04_guest_experience/run_guest_experience_charts.py` → `reports/figures/04_guest_experience/`

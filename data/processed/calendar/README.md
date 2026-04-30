@@ -33,7 +33,7 @@
 > - SF has both high price and high occupancy on the smallest supply (7,780 listings) → tight supply with decent unit economics.
 > - LA has the largest supply (45,886) but neither premium prices nor leading revenue → most competitive market.
 
-## 3. Field Definitions (`*_listing_occupancy.csv`)
+## 3. Field Definitions (`occupation_<city_slug>_cleaned.csv`, listing-level)
 
 | Column | Meaning | Notes |
 | --- | --- | --- |
@@ -45,18 +45,18 @@
 | `availability_rate` | `n_days_available / n_days` | |
 | `unavailability_rate` | `n_days_unavailable / n_days` | |
 | `occupancy_rate_proxy` | **Occupancy proxy** | Equal to `unavailability_rate`. **Not actual occupancy** — see Section 5. |
-| `listing_price` | Listed nightly price from `listings.csv` (USD/night) | `$` and `,` stripped; can be NaN, especially in NYC |
+| `listing_price` | Listed nightly price joined from `listing_all_cleaned.csv` (USD/night) | `$` and `,` stripped; can be NaN, especially in NYC |
 | `min_minimum_nights` | Minimum `minimum_nights` seen across the calendar | clipped to [1, 1125] |
 | `max_maximum_nights` | Maximum `maximum_nights` seen across the calendar | clipped to [1, 1125] |
 | `est_annual_revenue_proxy` | **Annual revenue proxy** | `listing_price × occupancy_rate_proxy × 365`; NaN when `listing_price` is missing |
 
-## 4. Field Definitions (`*_calendar_cleaned.csv`, row-level)
+## 4. Field Definitions (`calendar_<city_slug>_cleaned.csv`, row-level)
 
 `listing_id, city, date, available, price, adjusted_price, minimum_nights, maximum_nights`
 
 - `date`: `YYYY-MM-DD`.
 - `available`: bool (True = bookable, False = unavailable).
-- `price` / `adjusted_price`: **almost always NaN** — Inside Airbnb's recent calendar dumps no longer carry per-night prices. Use `listing_price` from the occupancy table or `listings.csv` instead.
+- `price` / `adjusted_price`: **almost always NaN** — Inside Airbnb's recent calendar dumps no longer carry per-night prices. Use `listing_price` from the occupation table or `listing_all_cleaned.csv` instead.
 - `minimum_nights` / `maximum_nights`: `Int64`, clipped to [1, 1125].
 
 ## 5. Important Warnings (please read)

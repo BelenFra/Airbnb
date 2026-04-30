@@ -26,7 +26,7 @@ def main() -> None:
 from pathlib import Path
 
 project_root = Path("''' + str(PROJECT_ROOT) + r'''")
-figures_dir = project_root / "reports" / "figures"
+figures_dir = project_root / "reports" / "figures" / "05_investment_decision"
 reports_dir = project_root / "reports" / "investment_decision"
 figures_dir.mkdir(parents=True, exist_ok=True)
 reports_dir.mkdir(parents=True, exist_ok=True)
@@ -92,8 +92,8 @@ with report_path.open("w", encoding="utf-8") as handle:
     handle.write("- Monthly occupancy comes from `data/processed/calendars/calendar_all_cleaned.csv` through `data/processed/investment_decision/step4_calendar_city_month_metrics.csv`.\n")
     handle.write("- This keeps time-based risk separate from `master_data.csv`, which is listing-level and annualized.\n\n")
     handle.write("## Figures Created\n\n")
-    handle.write("- `reports/figures/step4_monthly_occupancy_by_city.png`: monthly occupancy rate for each city.\n")
-    handle.write("- `reports/figures/step4_monthly_occupancy_index_by_city.png`: each city's monthly occupancy indexed to its own average.\n\n")
+    handle.write("- `reports/figures/05_investment_decision/step4_monthly_occupancy_by_city.png`: monthly occupancy rate for each city.\n")
+    handle.write("- `reports/figures/05_investment_decision/step4_monthly_occupancy_index_by_city.png`: each city's monthly occupancy indexed to its own average.\n\n")
     handle.write("## Seasonality Summary\n\n")
     for row in seasonality.to_dict(orient="records"):
         handle.write(

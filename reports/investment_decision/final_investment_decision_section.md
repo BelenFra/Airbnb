@@ -27,7 +27,13 @@ This file already merges listing attributes with calendar-derived operating fiel
 - listing `price` as a fallback when revenue/occupancy cannot infer a nightly rate
 - listing attributes such as city, neighborhood, room type, property type, bedrooms, reviews, and ratings
 
-The one important modeling split is now explicit: `master_data.csv` is listing-level and annualized, while `data/processed/calendars/calendar_all_cleaned.csv` contains the date-level calendar records needed for monthly seasonality. The investment economics use master data; the time-based risk analysis uses the combined calendar file. `calendar_last_scraped` is used as a freshness/snapshot-consistency check from master data, not as a seasonality variable.
+The one important modeling split is now explicit: `master_data.csv` is listing-level and annualized, while `data/processed/calendar_all_cleaned.csv` contains the date-level calendar records needed for monthly seasonality. The investment economics use master data; the time-based risk analysis uses the merged calendar file. `calendar_last_scraped` is used as a freshness/snapshot-consistency check from master data, not as a seasonality variable.
+
+Supporting processed inputs (when reproducing or auditing the pipeline):
+
+- `data/processed/listing_all_cleaned.csv`
+- `data/processed/occupation_all_cleaned.csv` (listing-level calendar merge consumed when building `master_data.csv`)
+- Per-city optional row-level calendars: `data/processed/calendar/<city_slug>/calendar_<city_slug>_cleaned.csv`
 
 ## Core Investment Questions Answered
 
@@ -188,7 +194,7 @@ The risk model combines:
 
 - downside risk from the conservative-to-moderate revenue gap
 - bootstrap uncertainty
-- city-level seasonality from `calendar_all_cleaned.csv`
+- city-level seasonality from `data/processed/calendar_all_cleaned.csv`
 - neighborhood competition
 - calendar scrape-date freshness from `calendar_last_scraped`
 - regulatory proxy risk
@@ -281,17 +287,17 @@ Markdown reports:
 
 Figures:
 
-- `reports/figures/step1_top_candidate_revenue.png`
-- `reports/figures/step1_best_segment_by_city.png`
-- `reports/figures/step2_knn_validation_comparison.png`
-- `reports/figures/step3_revenue_scenarios.png`
-- `reports/figures/step3_bootstrap_median_uncertainty.png`
-- `reports/figures/step3_top_candidate_sensitivity.png`
-- `reports/figures/step4_risk_score_by_candidate.png`
-- `reports/figures/step4_risk_components_heatmap.png`
-- `reports/figures/step4_monthly_occupancy_by_city.png`
-- `reports/figures/step4_monthly_occupancy_index_by_city.png`
-- `reports/figures/step5_portfolio_revenue_vs_risk.png`
-- `reports/figures/step5_recommended_portfolios.png`
-- `reports/figures/step5_city_occupancy_correlation.png`
-- `reports/figures/step5b_efficient_frontier.png`
+- `reports/figures/05_investment_decision/step1_top_candidate_revenue.png`
+- `reports/figures/05_investment_decision/step1_best_segment_by_city.png`
+- `reports/figures/05_investment_decision/step2_knn_validation_comparison.png`
+- `reports/figures/05_investment_decision/step3_revenue_scenarios.png`
+- `reports/figures/05_investment_decision/step3_bootstrap_median_uncertainty.png`
+- `reports/figures/05_investment_decision/step3_top_candidate_sensitivity.png`
+- `reports/figures/05_investment_decision/step4_risk_score_by_candidate.png`
+- `reports/figures/05_investment_decision/step4_risk_components_heatmap.png`
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_by_city.png`
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_index_by_city.png`
+- `reports/figures/05_investment_decision/step5_portfolio_revenue_vs_risk.png`
+- `reports/figures/05_investment_decision/step5_recommended_portfolios.png`
+- `reports/figures/05_investment_decision/step5_city_occupancy_correlation.png`
+- `reports/figures/05_investment_decision/step5b_efficient_frontier.png`

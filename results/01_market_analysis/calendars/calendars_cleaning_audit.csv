@@ -1,4 +1,4 @@
-﻿city,city_label,source_file,row_output_file,listing_output_file,listings_count,listings_with_price,avg_occupancy_proxy,median_listing_price,median_est_annual_revenue_proxy,first_date,last_date
+city,city_label,source_file,row_output_file,listing_output_file,listings_count,listings_with_price,avg_occupancy_proxy,median_listing_price,median_est_annual_revenue_proxy,first_date,last_date
 hawaii,Hawaii,data/raw/Hawaii/calendar.csv,,data/processed/calendar/hawaii/occupation_hawaii_cleaned.csv,33457,33132,0.3703,233.0,26582.0,2025-09-16,2026-09-16
 los_angeles,Los Angeles,data/raw/Los Angeles/calendar.csv,,data/processed/calendar/los_angeles/occupation_los_angeles_cleaned.csv,45886,36819,0.417,155.0,10300.0,2025-09-02,2026-09-02
 nashville,Nashville,data/raw/Nashville/calendar.csv,,data/processed/calendar/nashville/occupation_nashville_cleaned.csv,9443,6634,0.3146,158.0,10808.5,2025-09-23,2026-09-23

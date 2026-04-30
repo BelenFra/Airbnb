@@ -473,9 +473,9 @@ def process_city(
     return {
         "city": city_snake,
         "city_label": city_label,
-        "source_file": str(csv_file.relative_to(PROJECT_ROOT)),
-        "row_output_file": str(output_row_file.relative_to(PROJECT_ROOT)) if write_row_file else "",
-        "listing_output_file": str(output_listing_file.relative_to(PROJECT_ROOT)),
+        "source_file": csv_file.relative_to(PROJECT_ROOT).as_posix(),
+        "row_output_file": output_row_file.relative_to(PROJECT_ROOT).as_posix() if write_row_file else "",
+        "listing_output_file": output_listing_file.relative_to(PROJECT_ROOT).as_posix(),
         "rows_in": rows_in,
         "rows_out": rows_out,
         "rows_removed_total": rows_removed_total,

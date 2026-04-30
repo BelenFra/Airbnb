@@ -79,6 +79,8 @@ Do not run the individual listing, review, or calendar cleaning scripts manually
 3. **Calendar occupation third**: uses `data/processed/listing_all_cleaned.csv` and creates `data/processed/occupation_all_cleaned.csv`.
 4. **Final join last**: joins `listing_all_cleaned.csv` with `occupation_all_cleaned.csv` and creates `data/processed/master_data.csv`.
 
+**Listing revenue integrity (Prof. Emadi):** Do not carry listings with **null or empty `price`** into the merged listing master used for revenue logic (`price × occupancy × 365` style joins). The listing cleaner **drops** those rows after merge (`scripts/cleaning/listing/run_full_listing_cleaning.py`); downstream scripts assume non-null `price` where the revenue equation applies.
+
 #### Why `--calendar-write-row-files` is mandatory for the term project
 
 The Q4 *seasonality* analysis (`scripts/market_analysis/q4_seasonality.py`) needs the **row-level** calendar (one row per listing × date) to aggregate demand by `(city, year_month)`. Without the flag the orchestrator only writes the per-listing occupation table, and Q4 cannot run. Always call the orchestrator with `--calendar-write-row-files` so the project ships:
@@ -105,6 +107,8 @@ Audits and human-readable summaries live under `results/01_market_analysis/<asse
 City slugs are lowercase snake_case (`hawaii`, `los_angeles`, `nashville`, `new_york`, `san_francisco`). Do not invent new locations or rename these files; if a new asset family is added, extend this table first.
 
 ## Text analytics & text mining (Unstructured Data)
+
+**MBA706 / Kenan–Flagler unstructured-data sequence:** **normalization** → **stemming** → **TF–IDF** weighting (implementation detail and governance in §3–§4 of `scripts/models/text_analysis/text_analytics_readme.md`).
 
 Governance and definitions (**Document** = listing-level text unit; **Corpus** = city/market collection; **BoW**; TF–IDF formula \(\mathrm{TFIDF}(t,d)=\mathrm{TF}(t,d)\times\mathrm{IDF}(t)\)) live in **`scripts/models/text_analysis/text_analytics_readme.md`**. Follow that document for methodology and outputs.
 

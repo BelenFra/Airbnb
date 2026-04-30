@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -54,18 +55,45 @@ TEXT_FEATURES_DIR = PROJECT_ROOT / "results" / "04_guest_experience" / "text_fea
 DEVIATION_FILE = TEXT_FEATURES_DIR / "listing_city_deviation_terms.csv"
 
 RESULTS_ROOT = PROJECT_ROOT / "results" / "04_guest_experience"
+FIG_GUEST_DIR = PROJECT_ROOT / "reports" / "figures" / "04_guest_experience"
 Q1_DIR = RESULTS_ROOT / "q1_review_complaints"
 Q2_DIR = RESULTS_ROOT / "q2_five_star_drivers"
 Q3_DIR = RESULTS_ROOT / "q3_operational_investments"
 Q4_DIR = RESULTS_ROOT / "q4_top_performer_praise"
-# Guest complaint / friction tokens (``comments_clean`` is lower-style review text)
-COMPLAINT_PATTERNS = re.compile(
-    r"\b(?:noise|noisy|loud|smell|stink|mold|mould|bug|bugs|roach|"
-    r"cockroach|dirty|dirt|stain|broken|leak|problem|issue|disappoint|"
+
+Q4_REPRODUCIBILITY_MD = """## Reproducibility
+
+Q4 reads **`results/04_guest_experience/text_features/listing_city_deviation_terms.csv`**, which is produced by the hierarchical text-mining step. That file is **gitignored** (large; same regeneration pass as `listing_tfidf_matrix.npz`). **After a fresh clone** it will not exist.
+
+- **To only read results:** use this `q4_summary.md` and `q4_term_lift_top_vs_other.csv` as committed artefacts.
+- **To rerun Q4 locally:** (1) `python scripts/models/text_analysis/run_hierarchical_text_mining.py --skip-sentiment` — or omit `--skip-sentiment` if you need sentiment outputs; (2) `python scripts/04_guest_experience/run_guest_experience_questions.py`.
+
+Running step (2) **without** the deviation CSV overwrites this summary with a short **Inputs not found** stub until step (1) has been completed.
+"""
+# Guest complaint / friction cues in ``comments_clean`` (lower-style text).
+# Phrase-based where single tokens inflated rates (e.g. "hot tub", "third party",
+# "party-friendly", generic "small").
+_COMPLAINT_TOKEN = (
+    r"(?:"
+    r"\b(?:noise|noisy|loud|smell|stink|mold|mould|bug|bugs|roach|cockroach|"
+    r"dirty|dirt|stain|broken|leak|problem|issue|disappoint|"
     r"frustrat|rude|unresponsive|slow|wait|delay|misleading|inaccurate|"
-    r"unsafe|cold|hot|hvac|small|cramped|construction|party)\w*\b",
-    re.IGNORECASE,
+    r"unsafe|cold|hvac|construction)\w*\b"
+    r"|"
+    # Heat / stuffiness (not bare "hot" → hot tub, hot water, etc.)
+    r"(?:\b(?:too|very|so|really)\s+hot\b|\boverheat\w*\b|\bstuffy\b)"
+    r"|"
+    # Space (not bare "small" / "cramped")
+    r"(?:\b(?:too|quite|very|slightly|a\s+bit|felt)\s+small\b|"
+    r"\b(?:too|very|quite|felt)\s+cramped\b|\bcramped\s+(?:space|room|unit|apartment|place)\b)"
+    r"|"
+    # Parties as nuisance (not "third party", not bare "party" in party-friendly)
+    r"\b(?:loud|noisy)\s+part(?:y|ies)\b|"
+    r"\bpart(?:y|ies)\s+(?:upstairs|next\s+door|late|every\s+night|all\s+night|neighbors?)\b|"
+    r"\bneighbor\w*\s+partying\b"
+    r")"
 )
+COMPLAINT_PATTERNS = re.compile(_COMPLAINT_TOKEN, re.IGNORECASE)
 
 SUBSCORE_COLS = [
     "review_scores_cleanliness",
@@ -88,6 +116,79 @@ def df_to_simple_md_table(df: pd.DataFrame, max_rows: int | None = None) -> str:
     for _, row in d.iterrows():
         lines.append("| " + " | ".join(str(row[c]) for c in cols) + " |")
     return "\n".join(lines) + "\n"
+
+
+def toolkit_logistic_summary_markdown(log_res: dict) -> str:
+    """Format ``train_logistic_regression`` result as investor-friendly markdown tables."""
+    parts: list[str] = []
+    coef = log_res.get("coefficients") or {}
+    metric_rows: list[dict] = []
+    confusion_blocks: list[tuple[str, dict]] = []
+
+    for key in sorted(log_res.keys()):
+        if key in ("status", "coefficients"):
+            continue
+        val = log_res[key]
+        if isinstance(val, dict) and {"tn", "fp", "fn", "tp"}.issubset(val.keys()):
+            label = (
+                key.replace("_confusion_matrix", "")
+                .replace("_", " ")
+                .strip()
+                .title()
+                or "Confusion"
+            )
+            confusion_blocks.append((label, val))
+            continue
+        if isinstance(val, dict):
+            continue
+        metric_rows.append({"metric": key, "value": val})
+
+    if metric_rows:
+        parts.append(
+            "### Logistic regression — metrics\n\n"
+            + df_to_simple_md_table(pd.DataFrame(metric_rows))
+        )
+    if coef:
+        cdf = pd.DataFrame([{"feature": k, "coefficient": v} for k, v in coef.items()])
+        cdf = cdf.assign(_abs=cdf["coefficient"].abs()).sort_values("_abs", ascending=False).drop(
+            columns="_abs"
+        )
+        parts.append(
+            "### Logistic regression — coefficients\n\n" + df_to_simple_md_table(cdf)
+        )
+    for label, cm in confusion_blocks:
+        row = {k.upper(): cm[k] for k in ("tn", "fp", "fn", "tp")}
+        parts.append(
+            f"### Logistic regression — {label} confusion (TN / FP / FN / TP)\n\n"
+            + df_to_simple_md_table(pd.DataFrame([row]))
+        )
+    return "\n\n".join(parts) if parts else "_No logistic summary._\n"
+
+
+def toolkit_random_forest_summary_markdown(rf_res: dict) -> str:
+    """Format ``train_random_forest`` result (metrics + importances) as markdown tables."""
+    parts: list[str] = []
+    metric_rows: list[dict] = []
+    for key in sorted(rf_res.keys()):
+        if key in ("status", "feature_importance"):
+            continue
+        val = rf_res[key]
+        if isinstance(val, dict):
+            continue
+        metric_rows.append({"metric": key, "value": val})
+    if metric_rows:
+        parts.append(
+            "### Random Forest — metrics\n\n"
+            + df_to_simple_md_table(pd.DataFrame(metric_rows))
+        )
+    imp = rf_res.get("feature_importance") or {}
+    if imp:
+        idf = pd.DataFrame([{"feature": k, "importance": v} for k, v in imp.items()])
+        idf = idf.sort_values("importance", ascending=False)
+        parts.append(
+            "### Random Forest — feature importance\n\n" + df_to_simple_md_table(idf)
+        )
+    return "\n\n".join(parts) if parts else "_No random forest summary._\n"
 
 
 def normalize_listing_id(series: pd.Series) -> pd.Series:
@@ -209,7 +310,7 @@ def run_q1_chunked_complaints(master: pd.DataFrame, reviews_path: Path) -> None:
 
 ## Answer (headline)
 
-- **Relative complaint-friction in text:** We flag review comments that contain **practical complaint cues** (noise, smell, cleanliness/break/fix issues, delays, disappointment, etc. — regex over `comments_clean`).
+- **Relative complaint-friction in text:** We flag review comments that contain **practical complaint cues** (noise, smell, cleanliness/break/fix issues, delays, disappointment, **phrase-based** heat/space/party nuisances — regex over `comments_clean`). Single-word cues such as bare *hot*, *small*, *party* are avoided to limit false positives (e.g. hot tub, third party).
 - **By city**, the highest share of reviews with at least one such cue is **{top_city}** ({top_share_c:.1%} of in-scope reviews).
 - **By property type**, among types with **≥500 in-scope reviews**, the highest complaint-cue share is **{top_pt}** ({top_share_pt:.1%}). (See full table for rare types — small volumes can hit 100% in error.)
 
@@ -217,7 +318,7 @@ def run_q1_chunked_complaints(master: pd.DataFrame, reviews_path: Path) -> None:
 
 - One pass over `{reviews_path.relative_to(PROJECT_ROOT)}` in chunks ({CHUNKSIZE:,} rows).
 - Inner join to `master_data` for `City` and `property_type`.
-- **Outcome:** `share_complaint_cue` = reviews with ≥1 regex hit / all joined reviews.
+- **Outcome:** `share_complaint_cue` = reviews with ≥1 regex hit / all joined reviews. The list is **conservative on amenity/false-positive wording** but remains a **proxy**, not a literal complaint count.
 
 ## Evidence
 
@@ -294,8 +395,10 @@ def run_q2_subscore_drivers(master: pd.DataFrame) -> None:
         if len(coef_df)
         else ""
     )
-    rf_excerpt = {k: rf_res[k] for k in ("test_accuracy", "feature_importance") if k in rf_res}
     base_rate = df["is_high_overall"].mean()
+
+    log_table_block = toolkit_logistic_summary_markdown(log_res)
+    rf_table_block = toolkit_random_forest_summary_markdown(rf_res)
 
     md = f"""# Q2 — Which experience dimensions matter for near–5-star overall reviews?
 
@@ -316,17 +419,9 @@ Sub-scores are **correlated** with each other; coefficients are **associative**,
 - `q2_subscore_importance_ranking.csv` — logistic coefficients and RF importance.
 - `q2_subscore_correlation_with_overall.csv` — pairwise correlation with overall rating.
 
-### Logistic coefficients (test metrics in run log)
+{log_table_block}
 
-```text
-{log_res!r}
-```
-
-### Random Forest (excerpt)
-
-```text
-{rf_excerpt!r}
-```
+{rf_table_block}
 
 ## Business interpretation
 
@@ -395,13 +490,19 @@ def run_q3_operational_signals(master: pd.DataFrame) -> None:
     mba._data_store["q3_plot"] = plot_df.rename(
         columns={"self_checkin_amenity": "cohort", "review_scores_rating": "rating"}
     )
-    mba.create_visualization(
+    fig_info = mba.create_visualization(
         dataset_name="q3_plot",
         viz_type="boxplot",
         x_column="cohort",
         y_column="rating",
         title="Overall review rating by self check-in amenity listing flag",
     )
+    if fig_info.get("status") == "success" and fig_info.get("plot_saved"):
+        src = Path(str(fig_info["plot_saved"]))
+        FIG_GUEST_DIR.mkdir(parents=True, exist_ok=True)
+        dest = FIG_GUEST_DIR / src.name
+        if src.is_file() and src.resolve() != dest.resolve():
+            shutil.move(str(src), str(dest))
 
     best = sig_df[sig_df["flag"] == True].sort_values("mean_overall_rating", ascending=False)
 
@@ -425,7 +526,7 @@ Top signals by mean rating (flag=True rows) — see CSV for full table:
 ## Evidence
 
 - `q3_operational_signal_assoc.csv`
-- Figure (toolkit boxplot): `reports/figures/` (see latest guest-experience plot saved by toolkit naming).
+- `reports/figures/04_guest_experience/boxplot_cohort.png` (toolkit boxplot, moved here after generation).
 
 ## Business interpretation
 
@@ -442,6 +543,8 @@ def run_q4_top_performer_terms(master: pd.DataFrame) -> None:
 ## Status
 
 **Inputs not found:** `{DEVIATION_FILE.relative_to(PROJECT_ROOT)}`
+
+That file is **not in git** by design (see **Reproducibility** in the committed `q4_summary.md` when inputs exist, or regenerate below).
 
 Run the text mining pipeline first:
 
@@ -487,6 +590,7 @@ python scripts/04_guest_experience/run_guest_experience_questions.py
 
     md = f"""# Q4 — What do guests praise in top-performing listings?
 
+{Q4_REPRODUCIBILITY_MD}
 ## Answer (headline)
 
 We define **top performers** as listings in the **top quartile** of `review_scores_rating` ({thr:.2f}+). Using **listing–city TF‑IDF deviation terms** (words that **over-index** vs same-city peers), we compare which stems appear more often among top-quartile listings vs others.

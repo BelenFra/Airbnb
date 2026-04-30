@@ -44,7 +44,7 @@ master_path = project_root / "data" / "processed" / "master_data.csv"
 processed_dir = project_root / "data" / "processed" / "investment_decision"
 results_dir = project_root / "results" / "investment_decision"
 reports_dir = project_root / "reports" / "investment_decision"
-figures_dir = project_root / "reports" / "figures"
+figures_dir = project_root / "reports" / "figures" / "05_investment_decision"
 processed_dir.mkdir(parents=True, exist_ok=True)
 results_dir.mkdir(parents=True, exist_ok=True)
 reports_dir.mkdir(parents=True, exist_ok=True)

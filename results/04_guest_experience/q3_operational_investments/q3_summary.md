@@ -26,7 +26,7 @@ Top signals by mean rating (flag=True rows) — see CSV for full table:
 ## Evidence
 
 - `q3_operational_signal_assoc.csv`
-- Figure (toolkit boxplot): `reports/figures/` (see latest guest-experience plot saved by toolkit naming).
+- `reports/figures/04_guest_experience/boxplot_cohort.png` (toolkit boxplot, moved here after generation).
 
 ## Business interpretation
 

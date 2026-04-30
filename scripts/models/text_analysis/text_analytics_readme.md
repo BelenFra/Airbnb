@@ -67,9 +67,9 @@ With the usual sklearn definition, \(\mathrm{IDF}(t)\) reflects how rare \(t\) i
 | Output | Location | Role |
 |--------|----------|------|
 | Listing-level sparse TF-IDF matrix | `results/04_guest_experience/text_features/listing_tfidf_matrix.npz` | Document–term matrix (CSR). |
-| Row order ↔ `listing_id` | `results/04_guest_experience/text_features/listing_tfidf_row_index.csv` | Aligns matrix rows to listings. |
+| Row order ↔ `listing_id` | `results/04_guest_experience/text_features/listing_tfidf_row_index.csv` | Aligns matrix rows to listings. (Local output; gitignored with the listing matrix.) |
 | Vocabulary | `results/04_guest_experience/text_features/listing_tfidf_vocabulary.json` | Feature names (stemmed tokens). |
-| Listing metadata | `results/04_guest_experience/text_features/listing_documents_meta.csv` | `listing_id`, `City`, `n_reviews`, etc. |
+| Listing metadata | `results/04_guest_experience/text_features/listing_documents_meta.csv` | `listing_id`, `City`, `n_reviews`, etc. (Local output; gitignored.) |
 | Listing–term deviations | `results/04_guest_experience/text_features/listing_city_deviation_terms.csv` | Terms above city baseline (long format). |
 | City corpus TF-IDF | `results/04_guest_experience/text_features/city_corpus_tfidf_matrix.npz` | 5×|V| sparse matrix. |
 | City corpus index | `results/04_guest_experience/text_features/city_corpus_tfidf_rows.csv` | City label per row. |
