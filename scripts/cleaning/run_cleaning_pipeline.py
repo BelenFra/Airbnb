@@ -21,6 +21,7 @@ Order:
 from __future__ import annotations
 
 import argparse
+import csv
 import os
 import subprocess
 import sys
@@ -56,9 +57,9 @@ REVIEWS_ALL = PROCESSED_ROOT / "reviews_all_cleaned.csv"
 OCCUPATION_ALL = PROCESSED_ROOT / "occupation_all_cleaned.csv"
 MASTER_DATA = PROCESSED_ROOT / "master_data.csv"
 
-LISTING_SUMMARY = PROJECT_ROOT / "results" / "listing" / "listing_by_city_cleaning_summary.txt"
-CALENDAR_AUDIT = PROJECT_ROOT / "results" / "calendars" / "calendars_cleaning_audit.csv"
-REVIEWS_AUDIT = PROJECT_ROOT / "results" / "reviews" / "reviews_cleaning_audit.csv"
+LISTING_SUMMARY = PROJECT_ROOT / "results" / "01_market_analysis" / "listing" / "listing_by_city_cleaning_summary.txt"
+CALENDAR_AUDIT = PROJECT_ROOT / "results" / "01_market_analysis" / "calendars" / "calendars_cleaning_audit.csv"
+REVIEWS_AUDIT = PROJECT_ROOT / "results" / "01_market_analysis" / "reviews" / "reviews_cleaning_audit.csv"
 
 RATE_COLUMNS = ["availability_rate", "unavailability_rate", "occupancy_rate_proxy"]
 
@@ -134,7 +135,14 @@ def build_listing_occupation_join() -> None:
         validate="one_to_one",
     )
     joined = joined.drop(columns=["listing_id"])
-    joined.to_csv(MASTER_DATA, index=False, encoding="utf-8-sig")
+    joined.to_csv(
+        MASTER_DATA,
+        index=False,
+        encoding="utf-8-sig",
+        quoting=csv.QUOTE_ALL,
+        quotechar='"',
+        escapechar="\\",
+    )
 
 
 def validate_listing_outputs() -> None:

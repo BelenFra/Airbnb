@@ -1,0 +1,6 @@
+city,source_file,rows_total,unique_listings,unique_reviewers,unique_review_ids,duplicate_review_ids,nulls_listing_id,nulls_id,nulls_date,nulls_reviewer_id,nulls_reviewer_name,nulls_comments,blank_comments,comments_under_10_chars,comments_under_30_chars,rows_with_html_tags,rows_with_non_ascii,comment_length_mean,comment_length_median,comment_length_p95,comment_length_max,english_share_estimate,min_date,max_date
+hawaii,data/raw/reviews/reviews_hawaii.csv,1409171,26731,1099104,1409164,7,0,0,0,0,1,262,262,10474,71548,224358,390282,335.3,248.0,939.0,5535.0,0.8683,2010-02-16,2025-09-16
+los_angeles,data/raw/reviews/reviews_los_angeles.csv,1747347,33385,1415203,1747347,0,0,0,0,0,2,391,391,24346,145504,218598,449810,286.7,215.0,783.0,5708.0,0.8286,2009-05-26,2025-09-02
+nashville,data/raw/reviews/reviews_nashville.csv,784894,8449,707353,784894,0,0,0,0,0,1,290,290,6542,53040,67273,166372,237.2,180.0,641.0,5342.0,0.8851,2009-04-30,2025-09-23
+new_york,data/raw/reviews/reviews_new_york.csv,986597,24923,869544,986597,0,0,0,0,0,3,259,259,14356,75867,163076,280008,324.5,249.0,867.0,5621.0,0.7923,2009-05-25,2025-10-01
+san_francisco,data/raw/reviews/reviews_san_francisco.csv,410017,5910,360066,410003,14,0,0,0,0,1,74,74,4018,25143,58758,98637,280.2,213.0,757.0,4521.0,0.827,2009-05-03,2025-09-01

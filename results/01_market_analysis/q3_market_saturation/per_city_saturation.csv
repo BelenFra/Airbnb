@@ -1,0 +1,6 @@
+City,listings,unique_hosts,population_2024,listings_per_10k,mean_occupancy,host_hhi,top10_host_share,multi_listing_host_pct,share_listings_in_multi_host_portfolios,saturation_score,saturation_rank
+Hawaii,33132,8735,1450589,228.4,0.3701,0.00275,0.1187,0.3288,0.823,0.705,1
+Los Angeles,36819,17165,3820914,96.36,0.3027,0.00062,0.0491,0.2861,0.6672,0.341,4
+Nashville,6634,3009,715884,92.67,0.2787,0.00311,0.1333,0.2326,0.6519,0.57,2
+New York,21328,10418,8335897,25.59,0.3119,0.00379,0.1394,0.2286,0.6232,0.428,3
+San Francisco,5795,2959,808988,71.63,0.3861,0.00292,0.1211,0.2531,0.6186,0.238,5

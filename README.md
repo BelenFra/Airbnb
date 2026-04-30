@@ -12,6 +12,27 @@ Group capstone for an end-to-end investment memo on a $500K Airbnb portfolio acr
 
 > **Annual Revenue = Nightly Price × Occupancy Rate × 365**
 
+### Inside Airbnb snapshot dates (raw data)
+
+The raw `listings` / `reviews` / `calendar` files in `data/raw/` were downloaded
+from [insideairbnb.com/get-the-data](https://insideairbnb.com/get-the-data) in
+the September–October 2025 release window. The exact snapshot date per city is:
+
+| City | Snapshot date (Inside Airbnb) |
+| --- | --- |
+| Hawaii | 16 September 2025 |
+| Los Angeles | 1 September 2025 |
+| Nashville | 23 September 2025 |
+| New York | 1 October 2025 |
+| San Francisco | 1 September 2025 |
+
+All five cities must come from the **same coordinated snapshot window**. If we
+ever re-pull data we re-pull the full set; mixing snapshot quarters across
+cities biases every cross-city comparison (review timeline, occupancy proxies,
+yearly recovery indices). The snapshot window also caps the forward-looking
+calendar at ~365 days from the snapshot date — anything beyond that is still
+host availability, not actual demand.
+
 ### Cleaning Pipelines (one per data stream)
 
 | Stream | Code | Listing-level merged output |
@@ -37,7 +58,7 @@ Per-city intermediates live under `data/processed/calendar/<city_slug>/`, `data/
 9. **Per-listing aggregation in flight** — `n_days`, available/unavailable counts, min/max night stats.
 10. **Row-level CSVs** (optional) — `data/processed/calendar/<slug>/calendar_<slug>_cleaned.csv` (and optionally merged `data/processed/calendar_all_cleaned.csv`).
 11. **Listing-level occupancy** — `availability_rate`, `unavailability_rate`, `occupancy_rate_proxy`; **`listing_price` comes from `data/processed/listing_all_cleaned.csv`** when present; revenue proxy fields use that price layer.
-12. **Merge occupation** — per-city occupation files concatenate to `data/processed/occupation_all_cleaned.csv`; audit CSV at `results/calendars/calendars_cleaning_audit.csv`.
+12. **Merge occupation** — per-city occupation files concatenate to `data/processed/occupation_all_cleaned.csv`; audit CSV at `results/01_market_analysis/calendars/calendars_cleaning_audit.csv`.
 
 ### Calendar outputs (paths)
 
@@ -47,7 +68,7 @@ Per-city intermediates live under `data/processed/calendar/<city_slug>/`, `data/
 | `data/processed/calendar/<slug>/occupation_<slug>_cleaned.csv` × 5 | Listing-level occupancy + price join |
 | `data/processed/calendar_all_cleaned.csv` | Large merged rows (optional, gitignored) |
 | `data/processed/occupation_all_cleaned.csv` | Merged listing-level table for joins |
-| `results/calendars/calendars_cleaning_audit.csv` | Per-city run stats |
+| `results/01_market_analysis/calendars/calendars_cleaning_audit.csv` | Per-city run stats |
 
 ### Five-city snapshot (post-clean)
 
@@ -81,7 +102,7 @@ Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machi
 ### Detailed cleaning documentation
 
 - `scripts/cleaning/calendars/calendar_cleaning_decisions.md` — calendar-specific rules.
-- `scripts/cleaning/listing/README.md` — listing dtypes and null-fill logic.
+- `scripts/cleaning/listing/listing_cleaning_decisions.md` — listing dtypes and null-fill logic.
 - `AGENTS.md` — pipeline order and authoritative path layout.
 
 ## Folder Structure
@@ -90,19 +111,21 @@ Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machi
 |---|---|
 | `mba706_toolkit.py` | Approved analytics functions (the only library you need) |
 | `AGENTS.md` | Rules for Cursor's AI (read automatically) |
-| `CLAUDE.md` | Backup rules for Claude Code CLI |
+| `CLAUDE.md` | Backup rules for Claude Code CLI (delegates to `AGENTS.md`) |
 | `FUNCTIONS.md` | **Quick reference** — every toolkit function on one page |
 | `requirements.txt` | Python dependencies |
 | `environment.yml` | Conda environment (optional) |
-| `data/raw/` | Place raw Inside Airbnb files here (typically gitignored) |
-| `data/processed/` | Cleaned outputs from the pipeline (gitignored locally; regenerate after clone) |
+| `data/raw/` | Place raw Inside Airbnb files here (gitignored; only READMEs tracked) |
+| `data/processed/` | Cleaned outputs from the pipeline (multi-GB CSVs gitignored — regenerate after clone) |
 | `notebooks/` | Notebooks for EDA and analysis |
-| `scripts/cleaning/` | Cleaning scripts per data stream (calendars, listing, reviews) |
+| `scripts/cleaning/` | Cleaning scripts per data stream (calendars, listing, reviews) + orchestrator |
+| `scripts/eda/` | EDA inventory scripts for raw and processed data |
+| `scripts/market_analysis/` | Q1–Q4 market-level analysis scripts (risk-adjusted revenue, price/occupancy/revenue, saturation, seasonality) |
 | `scripts/models/` | Modeling scripts (clustering, supervised learning, kNN) |
 | `scripts/text_analysis/` | Text analytics scripts (sentiment, topic modeling) |
 | `reports/` | Final deliverables (memo, slides) |
-| `reports/figures/` | All plots (PNG, PDF) |
-| `results/` | Analytical outputs of the memo (cluster profiles, model metrics, revenue scenarios) |
+| `reports/figures/` | All plots (PNG, PDF) — see `reports/figures/market_analysis/` for Q1–Q4 charts |
+| `results/` | Analytical outputs organised by **business question** (`01_market_analysis/`, `02_segmentation/`, `03_pricing_models/`, `04_guest_experience/`, `05_investment_decision/`). Cleaning audits live inside `01_market_analysis/` (per-asset subfolders: `01_market_analysis/listing/`, `01_market_analysis/calendars/`, `01_market_analysis/reviews/`). See `results/README.md`. |
 
 > Cleaning rules and dataset layout are documented alongside code (`scripts/cleaning/*/README*.md`) and `AGENTS.md`; large derived CSV folders under `data/processed/` are gitignored except what you regenerate locally after cloning.
 
@@ -121,6 +144,33 @@ Execution order:
 2. **Reviews**: creates `data/processed/reviews_all_cleaned.csv`.
 3. **Calendar occupation**: uses `data/processed/listing_all_cleaned.csv` and creates `data/processed/occupation_all_cleaned.csv`.
 4. **Final join**: joins listings with occupation rates and creates `data/processed/master_data.csv`.
+
+> **Important — Q4 (seasonality) needs row-level calendars.** The default
+> orchestrator runs with `--occupation-only` which is fast but does *not* write
+> the row-level calendar files needed for Q4. To generate the full project
+> dataset (including `data/processed/calendar_all_cleaned.csv`, ~3 GB) run:
+>
+> ```bash
+> python scripts/cleaning/run_cleaning_pipeline.py --calendar-write-row-files
+> ```
+>
+> See `AGENTS.md` for details.
+
+## Market-Level Analysis (Q1–Q4)
+
+The four market-level questions of the term project are answered by the scripts
+under `scripts/market_analysis/`:
+
+| Q | Question | Script | Outputs |
+|---|---|---|---|
+| Q1 | Best risk-adjusted revenue opportunity | `scripts/market_analysis/q1_risk_adjusted_revenue.py` | `results/01_market_analysis/q1_risk_adjusted_revenue/`, `reports/figures/market_analysis/q1_risk_adjusted_revenue/` |
+| Q2 | Price, occupancy, revenue comparison | `scripts/market_analysis/q2_price_occupancy_revenue.py` | `results/01_market_analysis/q2_price_occupancy_revenue/`, `reports/figures/market_analysis/q2_price_occupancy_revenue/` |
+| Q3 | Market saturation / room for new entrants | `scripts/market_analysis/q3_market_saturation.py` | `results/01_market_analysis/q3_market_saturation/`, `reports/figures/market_analysis/q3_market_saturation/` |
+| Q4 | Seasonality of demand and revenue | `scripts/market_analysis/q4_seasonality.py` | `results/01_market_analysis/q4_seasonality/`, `reports/figures/market_analysis/q4_seasonality/` |
+
+All four scripts read from `data/processed/master_data.csv`; Q4 additionally
+streams `data/processed/calendar_all_cleaned.csv` in chunks. Each script writes
+a `q<i>_summary.md` memo with metrics, plots, and business interpretation.
 
 ## Getting Started
 

@@ -1,0 +1,6 @@
+City,listings,mean_price,median_price,p25_price,p75_price,mean_occupancy,median_occupancy,mean_revenue,median_revenue,mean_price_rank,mean_occupancy_rank,mean_revenue_rank
+Hawaii,33132,945.49,233.0,155.0,400.0,0.37,0.31,185989.67,26582.0,1,2,1
+Los Angeles,36819,341.99,155.0,95.0,260.0,0.3,0.25,30748.68,10300.0,4,4,4
+Nashville,6634,223.4,158.0,109.0,236.0,0.28,0.16,21021.56,10808.5,5,5,5
+New York,21328,680.53,154.0,89.0,279.0,0.31,0.24,62300.49,12167.0,2,3,2
+San Francisco,5795,378.92,170.0,105.0,285.0,0.39,0.33,41006.65,18256.0,3,1,3

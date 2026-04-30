@@ -13,7 +13,7 @@ You are helping an MBA student run data analytics in Cursor using an approved to
     Save plots (PNG/PDF) to `reports/figures/`. 
     Save final reports (PDF/DOCX) in `reports/` 
     Save cleaned datasets (CSV/EXCEL) in `data/processed/` following the **Cleaning Pipeline Outputs** layout below.
-    Save everything else (Excel/CSV/DOCX/TXT) to `results/`, with one subfolder per asset family (`results/listing/`, `results/calendars/`, `results/reviews/`), including memo-style analytics (cluster profiles, model metrics, revenue scenarios).
+    Save everything else (Excel/CSV/DOCX/TXT) to `results/`, organised by **business question** (`01_market_analysis/`, `02_segmentation/`, `03_pricing_models/`, `04_guest_experience/`, `05_investment_decision/`). Cleaning audits live inside `01_market_analysis/` per-asset family (`01_market_analysis/listing/`, `01_market_analysis/calendars/`, `01_market_analysis/reviews/`). Analytical outputs (cluster profiles, model metrics, revenue scenarios) go to the matching business-question folder.
 6. **Business first.** Provide business interpretation after every analysis, not just metrics.
 7. **Ask before extending.** If a needed function does not exist in the toolkit, ask the student before adding it.
 8. **No manual terminal.** Students will NOT run terminal commands. You must run all commands yourself.
@@ -74,7 +74,7 @@ The cleaning pipeline (`scripts/cleaning/run_cleaning_pipeline.py`) is the singl
 Run cleaning through the orchestrator:
 
 ```powershell
-python scripts\cleaning\run_cleaning_pipeline.py
+python scripts\cleaning\run_cleaning_pipeline.py --calendar-write-row-files
 ```
 
 Do not run the individual listing, review, or calendar cleaning scripts manually unless debugging a specific step. The orchestrator must manage dependencies in this order:
@@ -84,6 +84,15 @@ Do not run the individual listing, review, or calendar cleaning scripts manually
 3. **Calendar occupation third**: uses `data/processed/listing_all_cleaned.csv` and creates `data/processed/occupation_all_cleaned.csv`.
 4. **Final join last**: joins `listing_all_cleaned.csv` with `occupation_all_cleaned.csv` and creates `data/processed/master_data.csv`.
 
+#### Why `--calendar-write-row-files` is mandatory for the term project
+
+The Q4 *seasonality* analysis (`scripts/market_analysis/q4_seasonality.py`) needs the **row-level** calendar (one row per listing × date) to aggregate demand by `(city, year_month)`. Without the flag the orchestrator only writes the per-listing occupation table, and Q4 cannot run. Always call the orchestrator with `--calendar-write-row-files` so the project ships:
+
+- `data/processed/calendar/<city>/calendar_<city>_cleaned.csv`
+- `data/processed/calendar_all_cleaned.csv` (~3 GB, used by Q4)
+
+If you need to skip the row-level dump for a quick smoke test, use `--occupation-only` and document it explicitly — do **not** ship cleaned outputs from an `--occupation-only` run as the final processed dataset.
+
 | Asset | Per-city cleaned file | Merged cleaned file |
 |---|---|---|
 | Listings | `data/processed/listing/<city_slug>/listing_<city_slug>_cleaned.csv` | `data/processed/listing_all_cleaned.csv` |
@@ -92,11 +101,11 @@ Do not run the individual listing, review, or calendar cleaning scripts manually
 | Calendar occupation | `data/processed/calendar/<city_slug>/occupation_<city_slug>_cleaned.csv` | `data/processed/occupation_all_cleaned.csv` |
 | Final join (listings + occupation) | — | `data/processed/master_data.csv` |
 
-Audits and human-readable summaries live under `results/<asset_family>/`:
+Audits and human-readable summaries live under `results/01_market_analysis/<asset_family>/`:
 
-- `results/listing/listing_by_city_cleaning_summary.txt`
-- `results/calendars/calendars_cleaning_audit.csv`
-- `results/reviews/reviews_cleaning_audit.csv`
+- `results/01_market_analysis/listing/listing_by_city_cleaning_summary.txt`
+- `results/01_market_analysis/calendars/calendars_cleaning_audit.csv`
+- `results/01_market_analysis/reviews/reviews_cleaning_audit.csv`
 
 City slugs are lowercase snake_case (`hawaii`, `los_angeles`, `nashville`, `new_york`, `san_francisco`). Do not invent new locations or rename these files; if a new asset family is added, extend this table first.
 

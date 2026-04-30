@@ -1,0 +1,6 @@
+city,raw_rows,raw_unique_ids,cleaned_unique_ids,ids_dropped_by_cleaning,ids_extra_in_cleaned,drop_pct_vs_raw_ids,same_snapshot
+hawaii,1409171,1409164,1337286,71878,0,5.1,True
+los_angeles,1747347,1747347,1601310,146037,0,8.36,True
+nashville,784894,784894,731690,53204,0,6.78,True
+new_york,986597,986597,910498,76099,0,7.71,True
+san_francisco,410017,410003,384768,25235,0,6.15,True

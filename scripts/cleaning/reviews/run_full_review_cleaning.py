@@ -1,4 +1,5 @@
 import argparse
+import csv
 import html
 import os
 import sys
@@ -20,12 +21,21 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
+RAW_REVIEWS_DIR = RAW_DIR / "reviews"
 PROCESSED_ROOT = PROJECT_ROOT / "data" / "processed"
 PROCESSED_DIR = PROCESSED_ROOT / "review"
 REVIEWS_ALL_FILE = PROCESSED_ROOT / "reviews_all_cleaned.csv"
-RESULTS_DIR = PROJECT_ROOT / "results" / "reviews"
+RESULTS_DIR = PROJECT_ROOT / "results" / "01_market_analysis" / "reviews"
 RANDOM_STATE = 42
 MISSING_TEXT_VALUES = {"": pd.NA, "nan": pd.NA, "None": pd.NA}
+
+CITY_LABEL_BY_SNAKE = {
+    "hawaii": "Hawaii",
+    "los_angeles": "Los Angeles",
+    "nashville": "Nashville",
+    "new_york": "New York",
+    "san_francisco": "San Francisco",
+}
 
 
 def city_slug(city_label: str) -> str:
@@ -128,6 +138,9 @@ def process_city(csv_file: Path, city: str, min_length: int) -> dict:
                 index=False,
                 header=chunk_index == 0,
                 encoding="utf-8-sig",
+                quoting=csv.QUOTE_ALL,
+                quotechar='"',
+                escapechar="\\",
             )
 
             try:
@@ -174,6 +187,9 @@ def merge_review_outputs(audit_rows: list[dict]) -> None:
                 index=False,
                 header=not wrote_header,
                 encoding="utf-8-sig",
+                quoting=csv.QUOTE_ALL,
+                quotechar='"',
+                escapechar="\\",
             )
             wrote_header = True
 
@@ -193,23 +209,33 @@ def main() -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    city_dirs = sorted(
-        p for p in RAW_DIR.iterdir() if p.is_dir() and (p / "reviews.csv").exists()
-    )
-    if not city_dirs:
+    if not RAW_REVIEWS_DIR.exists():
         raise FileNotFoundError(
-            f"No <City>/reviews.csv files found under {RAW_DIR}"
+            f"Raw reviews directory not found: {RAW_REVIEWS_DIR}. "
+            "Expected layout: data/raw/reviews/reviews_<snake_city>.csv"
+        )
+
+    city_files: list[tuple[str, str, Path]] = []
+    for csv_path in sorted(RAW_REVIEWS_DIR.glob("reviews_*.csv")):
+        city_snake = csv_path.stem.removeprefix("reviews_")
+        if city_snake not in CITY_LABEL_BY_SNAKE:
+            print(f"WARN: unrecognized city snake '{city_snake}' for file {csv_path.name}; skipping")
+            continue
+        city_files.append((city_snake, CITY_LABEL_BY_SNAKE[city_snake], csv_path))
+
+    if not city_files:
+        raise FileNotFoundError(
+            f"No reviews_<city>.csv files matched under {RAW_REVIEWS_DIR} "
+            f"for the configured cities {sorted(CITY_LABEL_BY_SNAKE)}."
         )
 
     audit_rows = []
     print(
-        f"Cleaning {len(city_dirs)} city review files with minimum cleaned comment length = {args.min_length}"
+        f"Cleaning {len(city_files)} city review files with minimum cleaned comment length = {args.min_length}"
     )
-    for city_dir in city_dirs:
-        city = city_slug(city_dir.name)
-        csv_file = city_dir / "reviews.csv"
-        print(f"Starting {city_dir.name} -> {csv_file.relative_to(PROJECT_ROOT)}")
-        result = process_city(csv_file, city=city, min_length=args.min_length)
+    for city_snake, city_label, csv_file in city_files:
+        print(f"Starting {city_label} -> {csv_file.relative_to(PROJECT_ROOT)}")
+        result = process_city(csv_file, city=city_snake, min_length=args.min_length)
         audit_rows.append(result)
         print(
             f"Finished {result['city']}: rows_in={result['rows_in']}, "
@@ -218,7 +244,14 @@ def main() -> None:
 
     audit_df = pd.DataFrame(audit_rows)
     audit_path = RESULTS_DIR / "reviews_cleaning_audit.csv"
-    audit_df.to_csv(audit_path, index=False, encoding="utf-8-sig")
+    audit_df.to_csv(
+        audit_path,
+        index=False,
+        encoding="utf-8-sig",
+        quoting=csv.QUOTE_ALL,
+        quotechar='"',
+        escapechar="\\",
+    )
     merge_review_outputs(audit_rows)
     print(f"Saved audit summary to {audit_path}")
     print(f"Saved merged reviews to {REVIEWS_ALL_FILE}")
