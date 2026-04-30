@@ -8,4 +8,5 @@ Columns removed: 2
 Columns after column filtering (before price row filter): 78
 Final observations: 103708
 Final columns: 78
-Output file: C:\Users\belen\Documents\Projects\Airbnb\data\processed\listing\listing_by_city_cleaned.csv
+Intermediate output file: C:\Users\belen\Documents\Projects\Airbnb\data\processed\listing\_intermediate\listing_merged_before_nulls.csv
+Dtype rules documented in: C:\Users\belen\Documents\Projects\Airbnb\scripts\cleaning\listing\README.md

@@ -26,13 +26,29 @@ This folder is your analytics workspace for Cursor. It contains a pre-built Pyth
 | `reports/figures/` | All plots and images (PNG, PDF) |
 | `results/` | All other outputs |
 
+## Cleaning Pipeline Order
+
+To clean the Airbnb raw data, run the orchestrator:
+
+```powershell
+python scripts\cleaning\run_cleaning_pipeline.py
+```
+
+Do not run the individual listing, review, or calendar cleaning scripts manually unless debugging. The orchestrator manages dependencies and writes the standardized outputs.
+
+Execution order:
+1. **Listings**: creates `data/processed/listing_all_cleaned.csv`.
+2. **Reviews**: creates `data/processed/reviews_all_cleaned.csv`.
+3. **Calendar occupation**: uses `data/processed/listing_all_cleaned.csv` and creates `data/processed/occupation_all_cleaned.csv`.
+4. **Final join**: joins listings with occupation rates and creates `data/processed/master_data.csv`.
+
 ## Getting Started
 
 1. **Place your data file(s)** in the `data/` folder.
 2. **Open this folder in Cursor.**
-3. **Ask for your analysis** in the chat. See `prompt_examples/` for templates, or just describe what you want.
+3. **Ask for your analysis** in the chat. Describe the data file, analysis goal, target variable if relevant, and desired outputs.
 4. Cursor handles everything: environment setup, script creation, execution, and output saving.
-5. **Retrieve your outputs** from `results/` and `plots/`.
+5. **Retrieve your outputs** from `results/` and `reports/figures/`.
 
 ## What Happens Automatically
 
@@ -54,11 +70,11 @@ Always place input data files in `data/raw`. Reference them as:
 Mention three things in your prompt:
 1. **Data file** — `data/<filename>`
 2. **Analysis** — what you want done
-3. **Output names** — script in `scripts/`, results in `results/` and/or `plots/`
+3. **Output names** — script in `scripts/`, results in `results/` and/or `reports/figures/`
 
 Example: *"Use `data/churn.csv`, train logistic regression, random forest, and boosted trees on target `Churn`, compare models, save script as `scripts/churn_models.py` and results to `results/churn_comparison.xlsx`."*
 
-See `prompt_examples/` for more examples organized by analysis type.
+Use the same structure for other analysis requests: data source, analysis goal, target variable if relevant, script name, and output names.
 
 ## If the Toolkit Doesn't Have a Function You Need
 
@@ -73,7 +89,7 @@ Approve or decline before it proceeds.
 |---|---|
 | `.py` scripts | `scripts/` |
 | `.xlsx`, `.csv`, `.docx`, `.txt`, `.pdf` | `results/` |
-| `.png`, `.pdf` plots | `plots/` |
+| `.png`, `.pdf` plots | `reports/figures/` |
 
 ## Troubleshooting
 
