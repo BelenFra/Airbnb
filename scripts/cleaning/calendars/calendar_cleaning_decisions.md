@@ -1,7 +1,7 @@
 # Calendar Data Cleaning Decisions
 
 > Scope: the five-city `calendar.csv` files for the MBA706 Term Project (Hawaii / Los Angeles / Nashville / New York / San Francisco).
-> Last updated: 2026-04-26.
+> Last updated: 2026-04-30.
 
 ## 1. Naming and Hand-off Conventions (shared with Belu / Agostino)
 
@@ -17,16 +17,43 @@
 
 ## 2. Inputs and Outputs
 
-- Input: `data/Term Project/<City Name>/calendar.csv` (5 raw files).
-- Outputs: `data/processed/calendars/`
-  - `<city>_calendar_cleaned.csv` × 5 — row-level cleaned calendar (with a `city` column).
-  - `<city>_listing_occupancy.csv` × 5 — listing-level aggregation (occupancy + price).
-  - `all_cities_calendar_cleaned.csv` — the five cities concatenated (same header).
-  - `all_cities_listing_occupancy.csv` — five-city listing-level merge (**primary deliverable**).
-  - `calendars_cleaning_audit.csv` — per-city cleaning audit (rows in/out, drop reasons, etc.).
-- Documentation:
-  - `scripts/cleaning/calendars/calendar_cleaning_decisions.md` — this file.
-  - `data/processed/calendars/README.md` — dataset hand-off doc for the rest of the team.
+Aligned with `scripts/cleaning/calendars/run_full_calendar_cleaning.py` (paths relative to project root).
+
+### Inputs
+
+- One raw file per city: `data/raw/calendars/calendar_<city_slug>.csv`  
+  where `<city_slug>` ∈ `{hawaii, los_angeles, nashville, new_york, san_francisco}`.
+- **Upstream dependency:** cleaned listings master `data/processed/listing_all_cleaned.csv` (needed for `listing_price` on the occupation table). Run listing cleaning before calendar occupation.
+
+### Per-city outputs (`data/processed/calendar/<city_slug>/`)
+
+| File | Description |
+| --- | --- |
+| `calendar_<city_slug>_cleaned.csv` | Row-level cleaned calendar (`listing_id`, `city`, `date`, `available`, prices, nights). **Not written** if `--occupation-only`. |
+| `occupation_<city_slug>_cleaned.csv` | Listing-level roll-up (availability / occupancy proxy, joined listing price, revenue proxy). |
+
+### Merged outputs (`data/processed/`)
+
+| File | Description |
+| --- | --- |
+| `calendar_all_cleaned.csv` | Concatenation of all per-city row-level files (large; optional). **Skipped** with `--no-merged-rows` or `--occupation-only`. |
+| `occupation_all_cleaned.csv` | Concatenation of all five `occupation_<slug>_cleaned.csv` files (**primary hand-off** for `master_data.csv` join in `scripts/cleaning/run_cleaning_pipeline.py`). |
+
+### Audit / QC
+
+| File | Description |
+| --- | --- |
+| `results/01_market_analysis/calendars/calendars_cleaning_audit.csv` | Per-city row counts, clipping counters, proxy KPIs (written every run). |
+
+### Orchestration
+
+- Prefer `python scripts/cleaning/run_cleaning_pipeline.py --calendar-write-row-files` so listing → reviews → calendar → join order is enforced (see `AGENTS.md`).
+
+### Documentation
+
+- `scripts/cleaning/calendars/calendar_cleaning_decisions.md` — this file (cleaning rules).
+- `data/processed/calendar/README.md` — hand-off for which CSV to use / joins / warnings.
+- `AGENTS.md` and root `README.md` — orchestrator order and processed-data layout tables.
 
 ## 3. Row-level Cleaning Rules (executed inside the streaming pass)
 
@@ -43,7 +70,7 @@ The following are applied in order on each `chunksize=200_000` chunk:
    - `price > 10000` → set to `NaN`, count.
    - `minimum_nights` clipped to `[1, 1125]`; `maximum_nights` clipped to `[1, 1125]` (Airbnb platform max).
    - **No quantile-based price clipping at the row level** — that distorts "looks cheap, gets removed". Downstream models can apply per-city quantile clipping when needed.
-9. **Add `city` column** from the parent directory mapping.
+9. **Add `city` column** — snake_case slug (`hawaii`, `los_angeles`, …) for the city pass being streamed.
 
 Output column order: `listing_id, city, date, available, price, adjusted_price, minimum_nights, maximum_nights`.
 

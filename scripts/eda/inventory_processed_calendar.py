@@ -81,10 +81,10 @@ CITY_LABEL_BY_SNAKE = {
     "san_francisco": "San Francisco",
 }
 
-AUDIT_CANDIDATES = [
-    PROJECT_ROOT / "results" / "01_market_analysis" / "calendars" / "calendars_cleaning_audit.csv",
-    PROJECT_ROOT / "data" / "processed" / "calendars" / "calendars_cleaning_audit.csv",
-]
+# Canonical audit location (see AGENTS.md, run_full_calendar_cleaning.py).
+CALENDAR_CLEANING_AUDIT_CSV = (
+    PROJECT_ROOT / "results" / "01_market_analysis" / "calendars" / "calendars_cleaning_audit.csv"
+)
 
 CITY_DISPLAY = {
     "hawaii": "Hawaii",
@@ -206,15 +206,16 @@ def _load_listing_prices() -> tuple[dict[str, pd.Series], str]:
 
 
 def _load_audit() -> pd.DataFrame:
-    for path in AUDIT_CANDIDATES:
-        if path.exists():
-            audit = pd.read_csv(path, encoding="utf-8-sig")
-            audit["audit_source"] = str(path.relative_to(PROJECT_ROOT))
-            return audit
-    raise FileNotFoundError(
-        "No calendars_cleaning_audit.csv found. Looked in: "
-        + ", ".join(str(p.relative_to(PROJECT_ROOT)) for p in AUDIT_CANDIDATES)
-    )
+    path = CALENDAR_CLEANING_AUDIT_CSV
+    if not path.exists():
+        raise FileNotFoundError(
+            "Calendar cleaning audit not found at canonical path: "
+            f"{path.relative_to(PROJECT_ROOT)} "
+            "(run scripts/cleaning/run_cleaning_pipeline.py or calendars/run_full_calendar_cleaning.py)."
+        )
+    audit = pd.read_csv(path, encoding="utf-8-sig")
+    audit["audit_source"] = str(path.relative_to(PROJECT_ROOT))
+    return audit
 
 
 def _load_availability() -> pd.DataFrame | None:

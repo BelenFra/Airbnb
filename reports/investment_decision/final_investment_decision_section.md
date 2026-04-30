@@ -91,8 +91,10 @@ This diversified portfolio gives up about `$19,862` in moderate revenue versus t
 
 ### Internal Project Data
 
-- `data/processed/listings/listing_cleaned.csv`
-- `data/processed/calendars/*_calendar_cleaned.csv`
+- `data/processed/listing_all_cleaned.csv`
+- Per-city cleaned calendars (optional row-level): `data/processed/calendar/<city_slug>/calendar_<city_slug>_cleaned.csv`
+- Merged row-level calendar (optional; ~3 GB): `data/processed/calendar_all_cleaned.csv`
+- Listing-level occupation merge (**joined with listings for modeling**): `data/processed/occupation_all_cleaned.csv`
 - `data/processed/investment_decision/step1_calendar_listing_metrics.csv`
 - `data/processed/investment_decision/step1_calendar_city_month_metrics.csv`
 - `data/processed/investment_decision/step1_budget_feasible_listing_metrics.csv`

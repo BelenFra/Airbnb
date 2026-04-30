@@ -145,7 +145,7 @@ Deviation terms that **lift** among top-rated listings (examples—Porter stems)
 
 **Read:** language signals **strong endorsement and repeat-stay intent** more than a single amenity keyword; validate qualitatively before templating host messaging.
 
-**Notebook charts:** `guest_experience_charts.ipynb` rebuilds **four visuals** from the Q1–Q4 CSVs for slide-ready support.
+**Chart rebuild:** `scripts/04_guest_experience/run_guest_experience_charts.py` rebuilds **four visuals** from the Q1–Q4 CSVs for slide-ready support (toolkit `load_data` + `execute_python_code`).
 
 ---
 
@@ -194,10 +194,10 @@ Deviation terms that **lift** among top-rated listings (examples—Porter stems)
 | File | Purpose |
 | --- | --- |
 | `boxplot_cohort.png` | Q3: overall rating by self check-in amenity cohort (`create_visualization` from `run_guest_experience_questions.py`; moved here after generation). |
-| `q1_complaint_cue_rate_by_city.png` | Q1: complaint cue rate by city (`guest_experience_charts.ipynb`). |
-| `q2_subscore_drivers_rf_logistic.png` | Q2: RF importance + logistic coefficients (`guest_experience_charts.ipynb`). |
-| `q3_operational_signals_mean_rating.png` | Q3: mean overall rating by operational flags (`guest_experience_charts.ipynb`). |
-| `q4_term_lift_top_performers.png` | Q4: term lift for top-quartile listings (`guest_experience_charts.ipynb`). |
+| `q1_complaint_cue_rate_by_city.png` | Q1: complaint cue rate by city (`run_guest_experience_charts.py`). |
+| `q2_subscore_drivers_rf_logistic.png` | Q2: RF importance + logistic coefficients (`run_guest_experience_charts.py`). |
+| `q3_operational_signals_mean_rating.png` | Q3: mean overall rating by operational flags (`run_guest_experience_charts.py`). |
+| `q4_term_lift_top_performers.png` | Q4: term lift for top-quartile listings (`run_guest_experience_charts.py`). |
 
 ### Scripts
 
@@ -207,7 +207,7 @@ Deviation terms that **lift** among top-rated listings (examples—Porter stems)
 | `scripts/models/text_analysis/text_mining_core.py` | Pipeline implementation. |
 | `scripts/models/text_analysis/text_preprocessing.py` | Stemming / analyzer. |
 | `scripts/04_guest_experience/run_guest_experience_questions.py` | Rebuilds Q1–Q4 tables and markdown (toolkit splits + models). |
-| `results/04_guest_experience/guest_experience_charts.ipynb` | Four charts from saved CSVs; saves matching PNGs under `reports/figures/04_guest_experience/` when executed. |
+| `scripts/04_guest_experience/run_guest_experience_charts.py` | Four charts from saved CSVs → `reports/figures/04_guest_experience/` (`load_data` + `execute_python_code`). |
 
 ---
 
@@ -223,6 +223,12 @@ python scripts/models/text_analysis/run_hierarchical_text_mining.py --skip-senti
 
 ```powershell
 python scripts/04_guest_experience/run_guest_experience_questions.py
+```
+
+**Charts (PNG)** from committed CSVs only:
+
+```powershell
+python scripts/04_guest_experience/run_guest_experience_charts.py
 ```
 
 Runtime for text mining is **tens of minutes** on a laptop (full review scan + large `fit_transform`). All paths are project-root–relative.

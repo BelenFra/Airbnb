@@ -153,8 +153,8 @@ def process_city(csv_file: Path, city: str, min_length: int) -> dict:
 
     return {
         "city": city,
-        "source_file": str(csv_file.relative_to(PROJECT_ROOT)),
-        "output_file": str(output_file.relative_to(PROJECT_ROOT)),
+        "source_file": csv_file.relative_to(PROJECT_ROOT).as_posix(),
+        "output_file": output_file.relative_to(PROJECT_ROOT).as_posix(),
         "rows_in": rows_in,
         "rows_out": rows_out,
         "rows_removed_total": rows_in - rows_out,

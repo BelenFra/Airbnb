@@ -59,10 +59,16 @@ data/processed/investment_decision/**/*.csv
 
 results/01_market_analysis/reviews/**
 !results/01_market_analysis/reviews/.gitkeep
+!results/01_market_analysis/reviews/reviews_cleaning_audit.csv
 results/01_market_analysis/calendars/**
 !results/01_market_analysis/calendars/.gitkeep
+!results/01_market_analysis/calendars/calendars_cleaning_audit.csv
 reports/reviews/**
 reports/calendars/**
+
+# Legacy stray audit folders — audits belong under results/01_market_analysis/{reviews,calendars}/
+results/reviews/**
+results/calendars/**
 
 # ----- local / OS artifacts -----
 .cache/
@@ -72,6 +78,9 @@ __pycache__/
 venv/
 .DS_Store
 **/.DS_Store
+
+# Notebook superseded by scripts/04_guest_experience/run_guest_experience_charts.py
+results/04_guest_experience/guest_experience_charts.ipynb
 
 # ----- internal-only docs -----
 HOW_TO_USE_DRIVE_FOLDER.md
