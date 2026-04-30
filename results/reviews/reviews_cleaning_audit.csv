@@ -1,0 +1,6 @@
+﻿city,source_file,output_file,rows_in,rows_out,rows_removed_total,percent_removed,duplicate_rows_removed,missing_rows_removed,rows_with_html_tags,rows_changed_by_text_cleaning,blank_after_cleaning,short_comments_removed,min_comment_length,avg_kept_comment_length
+hawaii,data\raw\Hawaii\reviews.csv,data\processed\review\hawaii\reviews_hawaii_cleaned.csv,1409171,1337293,71878,5.1,0,263,224358,446498,0,71615,30,304.47
+los_angeles,data\raw\Los Angeles\reviews.csv,data\processed\review\los_angeles\reviews_los_angeles_cleaned.csv,1747347,1601310,146037,8.36,0,393,218597,427515,0,145644,30,246.31
+nashville,data\raw\Nashville\reviews.csv,data\processed\review\nashville\reviews_nashville_cleaned.csv,784894,731690,53204,6.78,0,291,67273,186759,0,52913,30,232.4
+new_york,data\raw\New York\reviews.csv,data\processed\review\new_york\reviews_new_york_cleaned.csv,986597,910498,76099,7.71,0,262,163076,271170,1,75836,30,271.52
+san_francisco,data\raw\San Francisco\reviews.csv,data\processed\review\san_francisco\reviews_san_francisco_cleaned.csv,410017,384779,25238,6.16,0,75,58757,111081,1,25162,30,266.28

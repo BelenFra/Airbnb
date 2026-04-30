@@ -29,6 +29,11 @@ data/processed/**
 !data/processed/listing/README.md
 
 # ----- results (large per-run outputs) -----
+!results/04_guest_experience/text_features/
+!results/04_guest_experience/text_features/README.md
+# Text-mining artefacts too large for GitHub (regenerate via scripts/models/text_analysis/)
+results/04_guest_experience/text_features/*.npz
+results/04_guest_experience/text_features/listing_city_deviation_terms.csv
 results/01_market_analysis/reviews/**
 !results/01_market_analysis/reviews/.gitkeep
 results/01_market_analysis/calendars/**
