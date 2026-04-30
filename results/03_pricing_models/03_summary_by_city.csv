@@ -1,0 +1,8 @@
+,price,price,price,price,estimated_occupancy_l365d,estimated_occupancy_l365d,estimated_occupancy_l365d,estimated_occupancy_l365d,annual_revenue_proxy,annual_revenue_proxy,annual_revenue_proxy,annual_revenue_proxy
+,count,mean,median,std,count,mean,median,std,count,mean,median,std
+City,,,,,,,,,,,,
+Hawaii,33132,945.4945,233.0,4571.4976,33132,57.9402,18.0,76.7926,33132,14991.9455,4900.0,30967.1632
+Los Angeles,36819,341.9924,155.0,1794.9426,36819,72.3326,30.0,87.8552,36819,15190.6517,4216.0,98057.5172
+Nashville,6633,223.4333,158.0,735.2827,6633,121.6472,114.0,89.3042,6633,23216.3537,17640.0,53847.446
+New York,21328,680.5268,154.0,4480.4533,21328,72.1211,0.0,97.383,21328,18092.8739,0.0,154390.8217
+San Francisco,5795,378.9242,170.0,2440.02,5795,100.6678,60.0,101.2155,5795,21441.9258,9801.0,73809.8003

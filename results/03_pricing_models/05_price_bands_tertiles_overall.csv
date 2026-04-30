@@ -1,0 +1,4 @@
+price_band,n,mean_price,mean_estimated_occupancy,mean_annual_revenue_proxy
+Low price (bottom third),34650,86.26,83.66,7702.69
+Mid price (middle third),34844,184.28,82.75,15010.57
+High price (top third),34213,1540.36,50.55,27189.25

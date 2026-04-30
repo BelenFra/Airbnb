@@ -1,0 +1,7 @@
+,price,price,price,price,estimated_occupancy_l365d,estimated_occupancy_l365d,estimated_occupancy_l365d,estimated_occupancy_l365d,annual_revenue_proxy,annual_revenue_proxy,annual_revenue_proxy,annual_revenue_proxy
+,count,mean,median,std,count,mean,median,std,count,mean,median,std
+room_type,,,,,,,,,,,,
+Entire home/apt,80153,493.6226,205.0,2430.6377,80153,74.6201,36.0,88.2851,80153,17518.0664,7164.0,30723.6614
+Hotel room,690,22672.0667,40000.0,22165.3948,690,14.9594,0.0,45.7805,690,172277.9217,0.0,1044670.136
+Private room,22325,306.6937,81.0,2447.446,22325,66.7838,6.0,91.7681,22325,8685.537,660.0,66763.1155
+Shared room,539,100.4119,35.0,448.3918,539,53.8961,0.0,85.9927,539,6030.8664,0.0,20796.2958
