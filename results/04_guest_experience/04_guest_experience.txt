@@ -1,0 +1,105 @@
+MBA 706 — Guest experience synthesis (Q1–Q4)
+=============================================
+Generated from analysis in results/04_guest_experience/ (see q*_summary.md and CSVs per question).
+
+
+Q1. What do guests complain about most in reviews? Does this differ by city or property type?
+-------------------------------------------------------------------------------------------
+
+Answer:
+  We measure “complaint friction” as the share of review comments (comments_clean)
+  that match a fixed set of problem-oriented cues: noise, smell, cleanliness and
+  breakage issues, delays, disappointment, etc. (regex scan; one chunked pass over
+  reviews joined to master_data for City and property_type).
+
+  By city, Hawaii has the highest share of in-scope reviews with at least one such
+  cue (~20.1%). Ordering by city (highest to lowest cue share): Hawaii, New York,
+  San Francisco, Nashville, Los Angeles.
+
+  By property type, rare types can show extreme rates from tiny samples. Among
+  property types with at least 500 in-scope reviews, “Room in hotel” shows the
+  highest complaint-cue share (~34.0%). Hotel and serviced-apartment–style room
+  types generally rank high in the full table.
+
+  Interpretation: higher shares mean more problem-oriented language in text, not
+  necessarily worse operations without checking structured scores and segment mix.
+
+Supporting outputs:
+  results/04_guest_experience/q1_review_complaints/q1_complaint_cue_rate_by_city.csv
+  results/04_guest_experience/q1_review_complaints/q1_complaint_cue_rate_by_property_type.csv
+  results/04_guest_experience/text_features/city_corpus_top_terms.csv (city vocabulary / TF-IDF)
+
+
+Q2. What guest experience factors (cleanliness, check-in, communication, location)
+    matter most for earning high overall reviews?
+---------------------------------------------------------------------------------
+
+Answer:
+  Outcome: is_high_overall = 1 if review_scores_rating >= 4.9 (~49.7% of listings
+  with non-missing sub-scores in the modeling sample).
+
+  Predictors: Airbnb sub-scores — cleanliness, check-in, communication, location.
+
+  Both logistic regression and a random forest (train/val/test split 70/15/15,
+  RANDOM_STATE=42) point to the same story:
+  - Cleanliness is the strongest predictor (largest logistic coefficient; highest
+    random forest feature importance, ~43%).
+  - Communication is second (importance ~26%; logistic coef similar in magnitude
+    to cleanliness).
+  - Check-in and location matter but rank third and fourth in this snapshot.
+
+  Test AUC for logistic regression is about 0.91. Sub-scores are correlated;
+  results are associative, not independent causal effects.
+
+Supporting outputs:
+  results/04_guest_experience/q2_five_star_drivers/q2_subscore_importance_ranking.csv
+  results/04_guest_experience/q2_five_star_drivers/q2_subscore_correlation_with_overall.csv
+
+
+Q3. Are there specific operational investments (e.g., self-check-in, professional
+    cleaning) that the review data suggests would pay off?
+---------------------------------------------------------------------------------
+
+Answer:
+  We proxy “investments” with flags parsed from the amenities string (e.g. self
+  check-in wording, lockbox/smart lock/keypad, mentions of cleaning) plus
+  instant_bookable, then compare mean review_scores_rating and share of listings
+  with overall rating >= 4.9. This is descriptive association only (hosts who
+  list more amenities may differ on many dimensions).
+
+  In this snapshot, listings with lockbox/keypad/smart-lock style language show
+  the highest mean overall rating among flags examined; cleaning-related amenity
+  mentions also align with higher averages. Self check-in wording is positive but
+  slightly lower on mean rating than lockbox/cleaning in the flag=True rows.
+  Instant Book listings here show lower mean overall ratings — treat as segment
+  mix, not proof that Instant Book hurts guests.
+
+Supporting outputs:
+  results/04_guest_experience/q3_operational_investments/q3_operational_signal_assoc.csv
+
+
+Q4. What do guests praise in top-performing listings that the client should replicate?
+------------------------------------------------------------------------------------
+
+Answer:
+  Top performers = top quartile of review_scores_rating (threshold about 4.97 in
+  this data). We compare listing–city TF-IDF deviation terms (words that
+  over-index vs same-city peers) between top quartile and others.
+
+  Terms that lift among top listings include hospitality and repeat-stay language
+  (stems after Porter): e.g. recommend, again, friendli, experi, back, world,
+  approach, bay — i.e. strong endorsement and “would return” style signals more
+  than a single amenity name.
+
+  Caveat: deviations highlight distinctive language vs local peers, not guaranteed
+  “praise only”; validate themes qualitatively before standardizing host messaging.
+
+Supporting outputs:
+  results/04_guest_experience/q4_top_performer_praise/q4_term_lift_top_vs_other.csv
+  results/04_guest_experience/text_features/listing_city_deviation_terms.csv
+
+
+Reproducibility
+---------------
+  Guest Q1–Q4 script: scripts/04_guest_experience/run_guest_experience_questions.py
+  Text features pipeline: scripts/text_analysis/run_hierarchical_text_mining.py

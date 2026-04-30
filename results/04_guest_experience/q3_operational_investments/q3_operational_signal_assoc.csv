@@ -1,0 +1,13 @@
+﻿signal,flag,n_listings,mean_overall_rating,share_high_overall_ge_4_9
+self_checkin_amenity,False,39180,3.1161,0.3358
+self_checkin_amenity,True,64528,4.0096,0.4091
+keypad_lockbox,False,49251,3.0525,0.3286
+keypad_lockbox,True,54457,4.2323,0.4291
+cleaning_fee_listed,False,59520,3.3195,0.3094
+cleaning_fee_listed,True,44188,4.1468,0.4784
+carbon_alarm,False,25323,3.6983,0.3583
+carbon_alarm,True,78385,3.6635,0.3889
+host_greets,False,95950,3.65,0.378
+host_greets,True,7758,3.9445,0.4241
+instant_bookable_flag,False,64993,3.6843,0.41
+instant_bookable_flag,True,38715,3.6513,0.3334
