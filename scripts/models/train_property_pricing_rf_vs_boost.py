@@ -26,7 +26,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-ROOT = Path(__file__).resolve().parents[2]  # github_upload_pricing/scripts/ → project root
+ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "modeling" / "property_pricing_modeling_dataset.csv"
 OUT_DIR = ROOT / "modeling" / "training_outputs_property_pricing"
 RANDOM_STATE = 42
