@@ -283,7 +283,10 @@ def _auto_name_cluster(row: pd.Series) -> str:
     if price >= 400 and bedrooms >= 3:
         return "Luxury large home"
     if price >= 250:
-        return "Premium mid-size"
+        # Two distinct economic profiles share the "premium mid-size" label —
+        # split on occupancy so downstream `groupby("cluster_name")` does not
+        # collapse a high-occupancy Hawaii cluster with a low-occupancy LA one.
+        return "Premium mid-size - active" if occ >= 0.30 else "Premium mid-size - slow-turn"
     if accommodates <= 2 and price < 150 and occ >= 0.4:
         return "Budget high-occupancy studio"
     if 2 <= bedrooms <= 3 and price < 250:

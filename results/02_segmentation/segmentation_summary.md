@@ -29,8 +29,8 @@
 |         5 |        29095 | $125           | $161         | 10.7%              | 17.0%            |                     2 |                 1 |                1   |                  30 | $4,882                     |        28.3 | Entire home/apt | New York    | Long-stay focused            |
 |         1 |        18242 | $136           | $165         | 76.2%              | 76.4%            |                     2 |                 1 |                1   |                   3 | $37,826                    |        17.7 | Entire home/apt | Los Angeles | Budget high-occupancy studio |
 |         4 |        24473 | $153           | $179         | 16.4%              | 18.8%            |                     3 |                 1 |                1   |                   1 | $9,159                     |        23.8 | Entire home/apt | Hawaii      | General mid-tier             |
-|         0 |        18379 | $312           | $463         | 34.8%              | 39.2%            |                     6 |                 2 |                2   |                   2 | $39,630                    |        17.9 | Entire home/apt | Hawaii      | Premium mid-size             |
-|         2 |        10660 | $395           | $621         | 16.4%              | 24.0%            |                     8 |                 4 |                3   |                   3 | $23,645                    |        10.4 | Entire home/apt | Los Angeles | Premium mid-size             |
+|         0 |        18379 | $312           | $463         | 34.8%              | 39.2%            |                     6 |                 2 |                2   |                   2 | $39,630                    |        17.9 | Entire home/apt | Hawaii      | Premium mid-size - active    |
+|         2 |        10660 | $395           | $621         | 16.4%              | 24.0%            |                     8 |                 4 |                3   |                   3 | $23,645                    |        10.4 | Entire home/apt | Los Angeles | Premium mid-size - slow-turn |
 |         3 |         2060 | $1,424         | $2,345       | 19.7%              | 26.2%            |                    12 |                 6 |                5.5 |                   3 | $102,393                   |         2   | Entire home/apt | Los Angeles | Luxury large home            |
 
 ## Top-10 Hawaii neighborhoods (composite score)
@@ -95,6 +95,6 @@
 
 ## Hand-off to Block 5 (Investment Decision)
 
-- Recommended **segments to short-list**: `Luxury large home` (cluster 3), `Premium mid-size` (cluster 0).
+- Recommended **segments to short-list**: `Luxury large home` (cluster 3), `Premium mid-size - active` (cluster 0).
 - Recommended **Hawaii neighborhoods to short-list**: `Ewa`, `Koloa-Poipu`, `Lihue`.
 - Use `cluster_assignments.csv` as the join key for Block 5 (`listing_id, City, cluster, cluster_name`).

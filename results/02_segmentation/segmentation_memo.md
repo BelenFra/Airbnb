@@ -87,11 +87,11 @@ After fitting, every cluster is auto-named from its centroid using simple busine
 | 5 | Long-stay focused | 29,095 | 28.3% | $125 | 10.7% | $4,882 | Entire home/apt | New York |
 | 1 | Budget high-occupancy studio | 18,242 | 17.7% | $136 | 76.2% | $37,826 | Entire home/apt | Los Angeles |
 | 4 | General mid-tier | 24,473 | 23.8% | $153 | 16.4% | $9,159 | Entire home/apt | Hawaii |
-| 0 | Premium mid-size *(active)* | 18,379 | 17.9% | $312 | 34.8% | $39,630 | Entire home/apt | Hawaii |
-| 2 | Premium mid-size *(slow-turn)* | 10,660 | 10.4% | $395 | 16.4% | $23,645 | Entire home/apt | Los Angeles |
+| 0 | Premium mid-size - active | 18,379 | 17.9% | $312 | 34.8% | $39,630 | Entire home/apt | Hawaii |
+| 2 | Premium mid-size - slow-turn | 10,660 | 10.4% | $395 | 16.4% | $23,645 | Entire home/apt | Los Angeles |
 | 3 | Luxury large home | 2,060 | 2.0% | $1,424 | 19.7% | **$102,393** | Entire home/apt | Los Angeles |
 
-Note: clusters 0 and 2 share the auto-name "Premium mid-size" but split on **occupancy** — c0 turns over twice as fast (35%) as c2 (16%). I treat them as two distinct economic profiles.
+Note: clusters 0 and 2 are both at the "premium mid-size" price point ($312 and $395 medians) but split on **occupancy** — c0 turns over twice as fast (35%) as c2 (16%). They are intentionally given different `cluster_name` values (`- active` / `- slow-turn`) so that `df.groupby("cluster_name")` in Block 5 keeps them separate. The split threshold is `occ ≥ 0.30` inside `_auto_name_cluster`.
 
 ### 3.4 Hawaii neighborhood ranking
 
@@ -163,8 +163,8 @@ Hawaii zoom-in (full table in `segment_supply_demand_gap.csv`):
 | ---: | --- | ---: | ---: | ---: | --- |
 | 1 | Budget high-occupancy studio | 5,067 | 15.5% | 77.3% | Hot & crowded |
 | 3 | Luxury large home | 684 | 2.1% | 37.3% | **Underserved — opportunity** |
-| 0 | Premium mid-size (active) | 10,699 | 32.7% | 34.2% | Hot & crowded |
-| 2 | Premium mid-size (slow-turn) | 2,685 | 8.2% | 26.0% | **Underserved — opportunity** |
+| 0 | Premium mid-size - active | 10,699 | 32.7% | 34.2% | Hot & crowded |
+| 2 | Premium mid-size - slow-turn | 2,685 | 8.2% | 26.0% | **Underserved — opportunity** |
 | 5 | Long-stay focused | 2,001 | 6.1% | 20.8% | **Underserved — opportunity** |
 | 4 | General mid-tier | 11,533 | 35.3% | 20.3% | **Oversupplied — risk** |
 
