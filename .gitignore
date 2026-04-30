@@ -1,4 +1,6 @@
 # Heavy data files are NOT tracked in git (multi-GB CSVs).
+# GitHub rejects blobs roughly >100 MB (and warns well below that). `.gitignore`
+# cannot filter by file size — block risky CSV classes by path pattern below instead.
 # We keep folder structure (.gitkeep) and small docs/audits (READMEs, *_cleaning_audit.csv,
 # market/segment summaries under results/). Large masters, merged tables, per-city *_cleaned.csv,
 # and investment_decision/*.csv are ignored explicitly below.
