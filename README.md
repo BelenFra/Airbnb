@@ -94,8 +94,8 @@ Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machi
 | `FUNCTIONS.md` | **Quick reference** — every toolkit function on one page |
 | `requirements.txt` | Python dependencies |
 | `environment.yml` | Conda environment (optional) |
-| `data/raw/` | Place raw Inside Airbnb files here (gitignored except READMEs) |
-| `data/processed/` | Cleaned datasets + per-domain READMEs and audits |
+| `data/raw/` | Place raw Inside Airbnb files here (typically gitignored) |
+| `data/processed/` | Cleaned outputs from the pipeline (gitignored locally; regenerate after clone) |
 | `notebooks/` | Notebooks for EDA and analysis |
 | `scripts/cleaning/` | Cleaning scripts per data stream (calendars, listing, reviews) |
 | `scripts/models/` | Modeling scripts (clustering, supervised learning, kNN) |
