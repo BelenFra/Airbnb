@@ -13,7 +13,7 @@ You are helping an MBA student run data analytics in Cursor using an approved to
     Save plots (PNG/PDF) to `reports/figures/`. 
     Save final reports (PDF/DOCX) in `reports/` 
     Save cleaned datasets (CSV/EXCEL) in `data/processed/` following the **Cleaning Pipeline Outputs** layout below.
-    Save everything else (Excel/CSV/DOCX/TXT) to `results/`, with one subfolder per asset family (`results/listing/`, `results/calendars/`, `results/reviews/`).
+    Save everything else (Excel/CSV/DOCX/TXT) to `results/`, with one subfolder per asset family (`results/listing/`, `results/calendars/`, `results/reviews/`), including memo-style analytics (cluster profiles, model metrics, revenue scenarios).
 6. **Business first.** Provide business interpretation after every analysis, not just metrics.
 7. **Ask before extending.** If a needed function does not exist in the toolkit, ask the student before adding it.
 8. **No manual terminal.** Students will NOT run terminal commands. You must run all commands yourself.

@@ -17,3 +17,14 @@ __pycache__/
 *.pyc
 *.csv
 *.gz
+
+# macOS Finder metadata
+.DS_Store
+**/.DS_Store
+
+# Internal-only docs (do not commit)
+HOW_TO_USE_DRIVE_FOLDER.md
+**/HOW_TO_USE_DRIVE_FOLDER.md
+
+# Chinese-language doc copies (do not commit)
+**/*_CN.md

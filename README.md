@@ -2,29 +2,109 @@
 
 ## What This Is
 
-This folder is your analytics workspace for Cursor. It contains a pre-built Python toolkit (`mba706_toolkit.py`) with every function you need for the course — data loading, cleaning, visualization, clustering, classification, regression, text analytics, and model comparison. You describe what you want in plain English, and Cursor writes the code, runs it, and saves the output.
+This folder is the analytics workspace for the MBA 706 term project. It contains a pre-built Python toolkit (`mba706_toolkit.py`) with every function the course requires — data loading, cleaning, visualization, clustering, classification, regression, text analytics, and model comparison. You describe what you want in plain English, and Cursor writes the code, runs it, and saves the output.
 
 **You do not need to write code or use the terminal yourself.**
+
+## Term Project — Airbnb Investment Analysis (5 Cities)
+
+Group capstone for an end-to-end investment memo on a $500K Airbnb portfolio across **Hawaii, Los Angeles, Nashville, New York, and San Francisco**. Three cleaning streams feed a unified analytical pipeline that applies the six required methods (cleaning, clustering, supervised learning, kNN, text analytics, prescriptive recommendation) and produces a quantified recommendation backed by the revenue equation:
+
+> **Annual Revenue = Nightly Price × Occupancy Rate × 365**
+
+### Cleaning Pipelines (one per data stream)
+
+| Stream | Code | Listing-level merged output |
+|---|---|---|
+| **Calendar / occupation** | `scripts/cleaning/calendars/run_full_calendar_cleaning.py` (normally via orchestrator) | `data/processed/occupation_all_cleaned.csv` |
+| **Listings** | `scripts/cleaning/listing/run_full_listing_cleaning.py` | `data/processed/listing_all_cleaned.csv` |
+| **Reviews** | `scripts/cleaning/reviews/run_full_review_cleaning.py` | `data/processed/reviews_all_cleaned.csv` |
+
+Per-city intermediates live under `data/processed/calendar/<city_slug>/`, `data/processed/listing/<city_slug>/`, and `data/processed/review/<city_slug>/`. The **joined modeling table** after the orchestrator is `data/processed/master_data.csv` (listings + occupation rates). Day-level calendars and merged multi-GB CSVs stay gitignored (see `.gitignore`); regenerate locally after cloning.
+
+### Calendar pipeline (canonical reference)
+
+`scripts/cleaning/calendars/run_full_calendar_cleaning.py` runs a streaming pass per city (chunk size 200,000 rows). Each chunk:
+
+1. **Project columns** — `listing_id, date, available, price, adjusted_price, minimum_nights, maximum_nights`.
+2. **Deduplicate** — hash the seven columns; drop duplicates keeping the first.
+3. **Drop rows missing required fields** — `listing_id`, `date`, `available`.
+4. **Parse dates** — `YYYY-MM-DD`; drop invalid.
+5. **Normalize `available`** — map `t/true/1`, `f/false/0`; drop others.
+6. **Clean numeric fields** — `price` / `adjusted_price` parsed without hard monetary caps **(recent Inside Airbnb calendars usually leave calendar price empty)**.
+7. **Nights columns** — coerced where present; occupancy comes from availability, not clipped caps on price/nights (see decisions doc).
+8. **City tag** — snake_case slug per city (`hawaii`, `los_angeles`, …).
+9. **Per-listing aggregation in flight** — `n_days`, available/unavailable counts, min/max night stats.
+10. **Row-level CSVs** (optional) — `data/processed/calendar/<slug>/calendar_<slug>_cleaned.csv` (and optionally merged `data/processed/calendar_all_cleaned.csv`).
+11. **Listing-level occupancy** — `availability_rate`, `unavailability_rate`, `occupancy_rate_proxy`; **`listing_price` comes from `data/processed/listing_all_cleaned.csv`** when present; revenue proxy fields use that price layer.
+12. **Merge occupation** — per-city occupation files concatenate to `data/processed/occupation_all_cleaned.csv`; audit CSV at `results/calendars/calendars_cleaning_audit.csv`.
+
+### Calendar outputs (paths)
+
+| File | Notes |
+|---|---|
+| `data/processed/calendar/<slug>/calendar_<slug>_cleaned.csv` × 5 | Day-level calendar per city (gitignored, optional) |
+| `data/processed/calendar/<slug>/occupation_<slug>_cleaned.csv` × 5 | Listing-level occupancy + price join |
+| `data/processed/calendar_all_cleaned.csv` | Large merged rows (optional, gitignored) |
+| `data/processed/occupation_all_cleaned.csv` | Merged listing-level table for joins |
+| `results/calendars/calendars_cleaning_audit.csv` | Per-city run stats |
+
+### Five-city snapshot (post-clean)
+
+| City | listings | with price | mean occupancy proxy | median listing price | median annual revenue proxy |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| hawaii | 33,457 | 97.6% | 37.0% | $230 | $26,100 |
+| los_angeles | 45,886 | 80.1% | 41.7% | $155 | $10,278 |
+| nashville | 9,443 | 70.2% | 31.5% | $158 | $10,803 |
+| new_york | 36,111 | 58.5% | 55.6% | $152 | $11,960 |
+| san_francisco | 7,780 | 74.3% | 48.0% | $170 | $18,196 |
+
+> **Caveat**: `occupancy_rate_proxy` tracks unavailability, not bookings. Treat it as a **proxy**. Full discussion: `scripts/cleaning/calendars/calendar_cleaning_decisions.md`.
+
+### Reproduce cleaning
+
+Prefer the orchestrator (writes listings → reviews → occupation → `master_data`):
+
+```powershell
+python scripts\cleaning\run_cleaning_pipeline.py
+```
+
+Calendar only (advanced):
+
+```bash
+python scripts/cleaning/calendars/run_full_calendar_cleaning.py --occupation-only --no-merged-rows
+python scripts/cleaning/calendars/run_full_calendar_cleaning.py --cities nashville san_francisco --occupation-only
+```
+
+Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machine.
+
+### Detailed cleaning documentation
+
+- `scripts/cleaning/calendars/calendar_cleaning_decisions.md` — calendar-specific rules.
+- `scripts/cleaning/listing/README.md` — listing dtypes and null-fill logic.
+- `AGENTS.md` — pipeline order and authoritative path layout.
 
 ## Folder Structure
 
 | Folder / File | Purpose |
 |---|---|
 | `mba706_toolkit.py` | Approved analytics functions (the only library you need) |
-| `AGENTS.md` | Rules for Cursor's AI (read automatically — you don't need to touch this) |
-| `CLAUDE.md` | Backup rules for Claude Code CLI (you don't need to read this) |
+| `AGENTS.md` | Rules for Cursor's AI (read automatically) |
+| `CLAUDE.md` | Backup rules for Claude Code CLI |
 | `FUNCTIONS.md` | **Quick reference** — every toolkit function on one page |
 | `requirements.txt` | Python dependencies |
-| `environment.yml` | Conda environment (optional, for instructor pre-setup) |
-| `data/raw` | **Place your datasets here** |
-| `data/processed` | clean csv files and Master_Data.csv final|
-| `notebooks/` | Noteooks for EDA Exploratory Data analysis|
-| `scripts/cleaning/` | All generated cleaning scripts |
-| `scripts/models/` | Clustering, Supervised Learning y k-NN |
-| `scripts/text_analysis/` | Clustering, Supervised Learning y k-NN |
-| `reports` | Final Deliverables (Memo and reports) |
-| `reports/figures/` | All plots and images (PNG, PDF) |
-| `results/` | All other outputs |
+| `environment.yml` | Conda environment (optional) |
+| `data/raw/` | Place raw Inside Airbnb files here (gitignored except READMEs) |
+| `data/processed/` | Cleaned datasets + per-domain READMEs and audits |
+| `notebooks/` | Notebooks for EDA and analysis |
+| `scripts/cleaning/` | Cleaning scripts per data stream (calendars, listing, reviews) |
+| `scripts/models/` | Modeling scripts (clustering, supervised learning, kNN) |
+| `scripts/text_analysis/` | Text analytics scripts (sentiment, topic modeling) |
+| `reports/` | Final deliverables (memo, slides) |
+| `reports/figures/` | All plots (PNG, PDF) |
+| `results/` | Analytical outputs of the memo (cluster profiles, model metrics, revenue scenarios) |
+
+> Cleaning rules and dataset layout are documented alongside code (`scripts/cleaning/*/README*.md`) and `AGENTS.md`; large derived CSV folders under `data/processed/` are gitignored except what you regenerate locally after cloning.
 
 ## Cleaning Pipeline Order
 
@@ -44,7 +124,7 @@ Execution order:
 
 ## Getting Started
 
-1. **Place your data file(s)** in the `data/` folder.
+1. **Place raw data files** in `data/raw/`.
 2. **Open this folder in Cursor.**
 3. **Ask for your analysis** in the chat. Describe the data file, analysis goal, target variable if relevant, and desired outputs.
 4. Cursor handles everything: environment setup, script creation, execution, and output saving.
@@ -56,25 +136,21 @@ When you start a session, Cursor will:
 1. Check if Python packages are installed; install them if missing.
 2. Run `scripts/check_environment.py` and report PASS/FAIL.
 3. Attempt automatic repair if anything fails.
-4. Proceed with your requested analysis.
+4. Proceed with the requested analysis.
 5. Never ask you to run terminal commands yourself.
-
-## Where to Put Datasets
-
-Always place input data files in `data/raw`. Reference them as:
-- `data/raw/my_data.csv`
-- `data/raw/my_data.xlsx`
 
 ## How to Ask for an Analysis
 
 Mention three things in your prompt:
-1. **Data file** — `data/<filename>`
+1. **Data file** — `data/raw/<filename>` or `data/processed/<filename>`
 2. **Analysis** — what you want done
 3. **Output names** — script in `scripts/`, results in `results/` and/or `reports/figures/`
 
-Example: *"Use `data/churn.csv`, train logistic regression, random forest, and boosted trees on target `Churn`, compare models, save script as `scripts/churn_models.py` and results to `results/churn_comparison.xlsx`."*
+Example — course-style classification: *"Use `data/raw/churn.csv`, train logistic regression, random forest, and boosted trees on target `Churn`, compare models, save script as `scripts/churn_models.py` and results to `results/churn_comparison.xlsx`."*
 
-Use the same structure for other analysis requests: data source, analysis goal, target variable if relevant, script name, and output names.
+Example — Airbnb term project modeling: *"Use `data/processed/master_data.csv`, cluster listings with k-means and save an elbow plot; save the script as `scripts/models/cluster_listings.py` and results to `results/cluster_profiles.csv`."*
+
+Same pattern for every request: dataset path (`data/raw/...` after cleaning pipeline, or processed outputs), analytic goal (+ target if supervised), script name under `scripts/`, and deliverables under `results/` / `reports/figures/`.
 
 ## If the Toolkit Doesn't Have a Function You Need
 
@@ -96,7 +172,7 @@ Approve or decline before it proceeds.
 | Problem | What Happens |
 |---|---|
 | Missing packages | Cursor installs them via `pip install -r requirements.txt` |
-| Excel file not found | Verify file is in `data/` and sheet name is correct |
+| Excel file not found | Verify file is in `data/raw/` and sheet name is correct |
 | Missing toolkit function | Approve function addition, then Cursor reruns |
 | xgboost error | Cursor attempts repair; if native fails, toolkit fallback runs automatically |
 | OpenMP / SHM error | Already handled by built-in safety guards |

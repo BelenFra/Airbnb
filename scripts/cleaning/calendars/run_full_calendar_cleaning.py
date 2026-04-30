@@ -1,4 +1,4 @@
-"""Calendar cleaning pipeline for the MBA706 Term Project (Yu Wang).
+"""Calendar cleaning pipeline for the MBA706 Term Project.
 
 Reads raw Inside Airbnb calendar files from
     data/raw/<City Name>/calendar.csv
@@ -11,7 +11,7 @@ and produces, in a single streaming pass per city:
 * results/calendars/calendars_cleaning_audit.csv             (per-city audit)
 
 Cleaning rules and occupancy definition are documented in
-    results/calendars/calendar_cleaning_decisions.md
+    scripts/cleaning/calendars/calendar_cleaning_decisions.md
 
 Listing prices for revenue estimation come from the cleaned listings master:
     data/processed/listing_all_cleaned.csv
