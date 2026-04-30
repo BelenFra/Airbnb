@@ -1,21 +1,46 @@
 import argparse
 import html
+import os
 import sys
 import re
 from pathlib import Path
+
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["KMP_USE_SHM"] = "0"
+os.environ["MPLCONFIGDIR"] = ".cache/matplotlib"
+os.environ["XDG_CACHE_HOME"] = ".cache"
+os.environ["MPLBACKEND"] = "Agg"
 
 import pandas as pd
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-RAW_DIR = PROJECT_ROOT / "data" / "raw" / "reviews"
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed" / "reviews"
+sys.path.insert(0, str(PROJECT_ROOT))
+
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
+PROCESSED_ROOT = PROJECT_ROOT / "data" / "processed"
+PROCESSED_DIR = PROCESSED_ROOT / "review"
+REVIEWS_ALL_FILE = PROCESSED_ROOT / "reviews_all_cleaned.csv"
 RESULTS_DIR = PROJECT_ROOT / "results" / "reviews"
+RANDOM_STATE = 42
+MISSING_TEXT_VALUES = {"": pd.NA, "nan": pd.NA, "None": pd.NA}
+
+
+def city_slug(city_label: str) -> str:
+    """Convert 'New York' -> 'new_york' for output filenames."""
+    return city_label.strip().lower().replace(" ", "_")
 
 EXPECTED_COLUMNS = ["listing_id", "id", "date", "reviewer_id", "reviewer_name", "comments"]
 CHUNK_SIZE = 200_000
 HTML_TAG_PATTERN = re.compile(r"<[^>]+>")
 WHITESPACE_PATTERN = re.compile(r"\s+")
+
+
+def clean_missing_text(series: pd.Series) -> pd.Series:
+    """Trim strings and standardize project-wide missing tokens."""
+    return series.astype("string").str.strip().replace(MISSING_TEXT_VALUES)
 
 
 def clean_comment(text: str) -> str:
@@ -43,9 +68,8 @@ def render_progress(prefix: str, current: int, total: int) -> None:
         sys.stdout.write("\n")
 
 
-def process_city(csv_file: Path, min_length: int) -> dict:
-    city = csv_file.stem.replace("reviews_", "")
-    output_file = PROCESSED_DIR / f"{city}_cleaned.csv"
+def process_city(csv_file: Path, city: str, min_length: int) -> dict:
+    output_file = PROCESSED_DIR / city / f"reviews_{city}_cleaned.csv"
     output_file.parent.mkdir(parents=True, exist_ok=True)
     if output_file.exists():
         output_file.unlink()
@@ -66,6 +90,9 @@ def process_city(csv_file: Path, min_length: int) -> dict:
     with csv_file.open("r", encoding="utf-8-sig", newline="") as handle:
         for chunk_index, chunk in enumerate(pd.read_csv(handle, usecols=EXPECTED_COLUMNS, chunksize=CHUNK_SIZE)):
             rows_in += len(chunk)
+
+            for col in EXPECTED_COLUMNS:
+                chunk[col] = clean_missing_text(chunk[col])
 
             row_hashes = hash_rows(chunk)
             duplicate_mask = row_hashes.isin(seen_hashes)
@@ -100,6 +127,7 @@ def process_city(csv_file: Path, min_length: int) -> dict:
                 mode="w" if chunk_index == 0 else "a",
                 index=False,
                 header=chunk_index == 0,
+                encoding="utf-8-sig",
             )
 
             try:
@@ -129,9 +157,30 @@ def process_city(csv_file: Path, min_length: int) -> dict:
     }
 
 
+def merge_review_outputs(audit_rows: list[dict]) -> None:
+    REVIEWS_ALL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if REVIEWS_ALL_FILE.exists():
+        REVIEWS_ALL_FILE.unlink()
+
+    wrote_header = False
+    for row in audit_rows:
+        output_file = PROJECT_ROOT / row["output_file"]
+        if not output_file.exists() or output_file.stat().st_size == 0:
+            continue
+        for chunk in pd.read_csv(output_file, encoding="utf-8-sig", chunksize=CHUNK_SIZE):
+            chunk.to_csv(
+                REVIEWS_ALL_FILE,
+                mode="a",
+                index=False,
+                header=not wrote_header,
+                encoding="utf-8-sig",
+            )
+            wrote_header = True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Clean Airbnb review text and create one cleaned CSV per city plus an audit CSV."
+        description="Clean Airbnb review text into data/processed/review/<city>/ plus reviews_all_cleaned.csv."
     )
     parser.add_argument(
         "--min-length",
@@ -144,15 +193,23 @@ def main() -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    input_files = sorted(RAW_DIR.glob("reviews_*.csv"))
-    if not input_files:
-        raise FileNotFoundError(f"No review CSV files found in {RAW_DIR}")
+    city_dirs = sorted(
+        p for p in RAW_DIR.iterdir() if p.is_dir() and (p / "reviews.csv").exists()
+    )
+    if not city_dirs:
+        raise FileNotFoundError(
+            f"No <City>/reviews.csv files found under {RAW_DIR}"
+        )
 
     audit_rows = []
-    print(f"Cleaning {len(input_files)} city files with minimum cleaned comment length = {args.min_length}")
-    for csv_file in input_files:
-        print(f"Starting {csv_file.name}")
-        result = process_city(csv_file, min_length=args.min_length)
+    print(
+        f"Cleaning {len(city_dirs)} city review files with minimum cleaned comment length = {args.min_length}"
+    )
+    for city_dir in city_dirs:
+        city = city_slug(city_dir.name)
+        csv_file = city_dir / "reviews.csv"
+        print(f"Starting {city_dir.name} -> {csv_file.relative_to(PROJECT_ROOT)}")
+        result = process_city(csv_file, city=city, min_length=args.min_length)
         audit_rows.append(result)
         print(
             f"Finished {result['city']}: rows_in={result['rows_in']}, "
@@ -161,8 +218,10 @@ def main() -> None:
 
     audit_df = pd.DataFrame(audit_rows)
     audit_path = RESULTS_DIR / "reviews_cleaning_audit.csv"
-    audit_df.to_csv(audit_path, index=False)
+    audit_df.to_csv(audit_path, index=False, encoding="utf-8-sig")
+    merge_review_outputs(audit_rows)
     print(f"Saved audit summary to {audit_path}")
+    print(f"Saved merged reviews to {REVIEWS_ALL_FILE}")
 
 
 if __name__ == "__main__":

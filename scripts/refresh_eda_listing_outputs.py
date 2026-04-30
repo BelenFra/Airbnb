@@ -28,13 +28,15 @@ def clean_missing(series: pd.Series) -> pd.Series:
 def suggest_dtype(column: str, observed_dtypes: list[str]) -> str:
     c = column.lower()
     dset = {d for d in observed_dtypes if d and str(d).lower() != "nan"}
+    if c == "accommodates":
+        return "Int64"
     if c in {"instant_bookable", "host_has_profile_pic", "host_is_superhost", "host_identity_verified"}:
         return "boolean"
     if c == "host_response_time":
         return "float"
     if c == "id" or c.endswith("_id"):
         return "float"
-    if "date" in c or c.endswith("_since") or c in {"first_review", "last_review", "last_scraped", "calendar_last_scraped"}:
+    if c.endswith("_date") or c.endswith("_since") or c in {"first_review", "last_review", "last_scraped", "calendar_last_scraped"}:
         return "datetime"
     if dset.issubset({"int64"}):
         return "Int64"
@@ -67,7 +69,9 @@ def main() -> None:
     dictionary_file = data_root / "Inside Airbnb Data Dictionary.xlsx"
     load_excel_data(str(dictionary_file), sheet_name="listings.csv detail v4.7", dataset_name="dict_listings_refresh")
 
-    city_dirs = sorted([p for p in data_root.iterdir() if p.is_dir()])
+    city_dirs = sorted(
+        [p for p in data_root.iterdir() if p.is_dir() and (p / "listings.csv").exists()]
+    )
     city_names = [p.name for p in city_dirs]
 
     all_city_dtypes = {}
@@ -140,7 +144,8 @@ def main() -> None:
         plt.savefig(out_plot, dpi=150)
         plt.close()
 
-    # Rebuild suggested dtype output based on new raw data
+    # Rebuild dtype review table for EDA display only. Production cleaning dtype
+    # rules live in scripts/cleaning/listing/README.md and run_full_listing_cleaning.py.
     all_columns = sorted(all_columns_union)
     dtype_rows = []
     for c in all_columns:
@@ -155,26 +160,9 @@ def main() -> None:
         dtype_rows.append(row)
 
     dtype_matrix_df = pd.DataFrame(dtype_rows)
-    suggested_dtype_out = dtype_matrix_df[["column", "suggested_standardized_dtype"]].copy()
-    suggested_dtype_out.to_csv(results_root / "suggested_dtypes_listing.csv", index=False, encoding="utf-8-sig")
-
-    # Optional: refresh global null report used in section 4b
-    total_rows_all = sum(all_city_row_counts.values())
-    global_rows = []
-    for c in all_columns:
-        missing_total = 0.0
-        for city in city_names:
-            city_rows = all_city_row_counts.get(city, 0)
-            city_null_pct = all_city_null_pct.get(city, {}).get(c, 100.0)
-            missing_total += (city_null_pct / 100.0) * city_rows
-        global_null_pct = (missing_total / total_rows_all) * 100 if total_rows_all else np.nan
-        global_rows.append({"column": c, "global_null_pct": round(global_null_pct, 4)})
-    pd.DataFrame(global_rows).to_csv(results_root / "listing_global_null_pct.csv", index=False, encoding="utf-8-sig")
 
     print(f"Cities processed: {city_names}")
     print(f"Plots overwritten in: {figures_root}")
-    print(f"Saved: {results_root / 'suggested_dtypes_listing.csv'}")
-    print(f"Saved: {results_root / 'listing_global_null_pct.csv'}")
 
 
 if __name__ == "__main__":

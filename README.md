@@ -14,42 +14,40 @@ Group capstone for an end-to-end investment memo on a $500K Airbnb portfolio acr
 
 ### Cleaning Pipelines (one per data stream)
 
-| Stream | Code | Listing-level output |
+| Stream | Code | Listing-level merged output |
 |---|---|---|
-| **Calendar** | `scripts/cleaning/calendars/run_full_calendar_cleaning.py` | `data/processed/calendars/all_cities_listing_occupancy.csv` |
-| **Listings** | `scripts/cleaning/listing/listing_by_city_cleaning.py` | `data/processed/listing/listing_by_city_cleaned.csv` |
-| **Reviews** | `scripts/cleaning/reviews/run_full_review_cleaning.py` | per-city cleaned files in `data/processed/reviews/` (listing-level features rollup TBD) |
+| **Calendar / occupation** | `scripts/cleaning/calendars/run_full_calendar_cleaning.py` (normally via orchestrator) | `data/processed/occupation_all_cleaned.csv` |
+| **Listings** | `scripts/cleaning/listing/run_full_listing_cleaning.py` | `data/processed/listing_all_cleaned.csv` |
+| **Reviews** | `scripts/cleaning/reviews/run_full_review_cleaning.py` | `data/processed/reviews_all_cleaned.csv` |
 
-> Verify each output exists in `data/processed/` before joining. Day-level files and merged multi-GB tables are kept off the repo (see `.gitignore`) and shared via the team Drive.
+Per-city intermediates live under `data/processed/calendar/<city_slug>/`, `data/processed/listing/<city_slug>/`, and `data/processed/review/<city_slug>/`. The **joined modeling table** after the orchestrator is `data/processed/master_data.csv` (listings + occupation rates). Day-level calendars and merged multi-GB CSVs stay gitignored (see `.gitignore`); regenerate locally after cloning.
 
-### Calendar Pipeline (canonical reference)
+### Calendar pipeline (canonical reference)
 
-`scripts/cleaning/calendars/run_full_calendar_cleaning.py` runs a single streaming pass per city (chunked at 200,000 rows so files up to 622 MB never have to load fully into memory). Each chunk goes through:
+`scripts/cleaning/calendars/run_full_calendar_cleaning.py` runs a streaming pass per city (chunk size 200,000 rows). Each chunk:
 
-1. **Project columns** — keep only `listing_id, date, available, price, adjusted_price, minimum_nights, maximum_nights`.
-2. **Deduplicate** — hash the seven columns and globally drop duplicate rows, keeping the first occurrence.
-3. **Drop rows missing required fields** — `listing_id`, `date`, or `available` cannot be null.
-4. **Parse dates** — coerce to `pd.Timestamp` and emit `YYYY-MM-DD` strings; drop unparseable rows.
-5. **Normalize `available`** — map `t/true/1 → True`, `f/false/0 → False`; drop other values.
-6. **Clean prices** — strip `$`, `,`, and whitespace from `price` / `adjusted_price` and cast to `float`. (Inside Airbnb's recent calendar dumps no longer carry per-night prices, so this column is empty in practice — see step 11.)
-7. **Outlier clipping (no row drops)** — set `price > $10,000` to `NaN`; clip `minimum_nights` and `maximum_nights` to `[1, 1125]`.
-8. **Tag the city** — add a `city` column using a snake_case mapping (`hawaii / los_angeles / nashville / new_york / san_francisco`).
-9. **Aggregate per listing in-flight** — accumulate `n_days`, `n_days_available`, `n_days_unavailable`, price stats by availability flag, plus min/max night thresholds via chunkwise `groupby` + `add` / `min` / `max` reductions.
-10. **Write outputs** — append the cleaned chunk to `data/processed/calendars/<city>_calendar_cleaned.csv` and (optionally) to the merged `all_cities_calendar_cleaned.csv`.
-11. **Post-pass per city** — derive `availability_rate`, `unavailability_rate`, and `occupancy_rate_proxy = unavailability_rate`; **join `listing_price` from `listings.csv` for the same city** (canonical source for nightly price); compute `est_annual_revenue_proxy = listing_price × occupancy_rate_proxy × 365`; persist `data/processed/calendars/<city>_listing_occupancy.csv`.
-12. **Post-pass across all cities** — concatenate the per-listing tables into `all_cities_listing_occupancy.csv` and write the per-city audit at `data/processed/calendars/calendars_cleaning_audit.csv`.
+1. **Project columns** — `listing_id, date, available, price, adjusted_price, minimum_nights, maximum_nights`.
+2. **Deduplicate** — hash the seven columns; drop duplicates keeping the first.
+3. **Drop rows missing required fields** — `listing_id`, `date`, `available`.
+4. **Parse dates** — `YYYY-MM-DD`; drop invalid.
+5. **Normalize `available`** — map `t/true/1`, `f/false/0`; drop others.
+6. **Clean numeric fields** — `price` / `adjusted_price` parsed without hard monetary caps **(recent Inside Airbnb calendars usually leave calendar price empty)**.
+7. **Nights columns** — coerced where present; occupancy comes from availability, not clipped caps on price/nights (see decisions doc).
+8. **City tag** — snake_case slug per city (`hawaii`, `los_angeles`, …).
+9. **Per-listing aggregation in flight** — `n_days`, available/unavailable counts, min/max night stats.
+10. **Row-level CSVs** (optional) — `data/processed/calendar/<slug>/calendar_<slug>_cleaned.csv` (and optionally merged `data/processed/calendar_all_cleaned.csv`).
+11. **Listing-level occupancy** — `availability_rate`, `unavailability_rate`, `occupancy_rate_proxy`; **`listing_price` comes from `data/processed/listing_all_cleaned.csv`** when present; revenue proxy fields use that price layer.
+12. **Merge occupation** — per-city occupation files concatenate to `data/processed/occupation_all_cleaned.csv`; audit CSV at `results/calendars/calendars_cleaning_audit.csv`.
 
-### Calendar outputs (where they go)
+### Calendar outputs (paths)
 
-| File | Size (approx.) | Purpose |
-| --- | ---: | --- |
-| `data/processed/calendars/<city>_calendar_cleaned.csv` × 5 | 144 MB ~ 839 MB | Cleaned day-level calendar per city (gitignored) |
-| `data/processed/calendars/<city>_listing_occupancy.csv` × 5 | 1 MB ~ 6 MB | Per-listing occupancy + price + revenue proxy |
-| `data/processed/calendars/all_cities_calendar_cleaned.csv` | ~2.3 GB | All five cities concatenated (gitignored, optional via `--no-merged-rows`) |
-| `data/processed/calendars/all_cities_listing_occupancy.csv` | 16 MB | **Primary deliverable** for downstream modeling |
-| `data/processed/calendars/calendars_cleaning_audit.csv` | 2 KB | Per-city audit (rows in/out, drop reasons, occupancy summary) |
-
-The day-level CSVs and the 2.3 GB merged file are gitignored; only the 16 MB summary table, the 2 KB audit CSV, and the documentation files travel with the repo.
+| File | Notes |
+|---|---|
+| `data/processed/calendar/<slug>/calendar_<slug>_cleaned.csv` × 5 | Day-level calendar per city (gitignored, optional) |
+| `data/processed/calendar/<slug>/occupation_<slug>_cleaned.csv` × 5 | Listing-level occupancy + price join |
+| `data/processed/calendar_all_cleaned.csv` | Large merged rows (optional, gitignored) |
+| `data/processed/occupation_all_cleaned.csv` | Merged listing-level table for joins |
+| `results/calendars/calendars_cleaning_audit.csv` | Per-city run stats |
 
 ### Five-city snapshot (post-clean)
 
@@ -61,24 +59,30 @@ The day-level CSVs and the 2.3 GB merged file are gitignored; only the 16 MB sum
 | new_york | 36,111 | 58.5% | 55.6% | $152 | $11,960 |
 | san_francisco | 7,780 | 74.3% | 48.0% | $170 | $18,196 |
 
-> **Caveat**: `occupancy_rate_proxy` equals the unavailability rate, which includes host-blocked days alongside actual bookings. It systematically overestimates true occupancy. Always label downstream results as "proxy"; see `data/processed/calendars/README.md` §5 for the full caveats.
+> **Caveat**: `occupancy_rate_proxy` tracks unavailability, not bookings. Treat it as a **proxy**. Full discussion: `scripts/cleaning/calendars/calendar_cleaning_decisions.md`.
 
-### Reproduce (calendar)
+### Reproduce cleaning
 
-```bash
-python scripts/cleaning/calendars/run_full_calendar_cleaning.py
-# Selectively:
-python scripts/cleaning/calendars/run_full_calendar_cleaning.py --cities nashville san_francisco
-# Skip the 2.3 GB merged row-level file (recommended on laptops):
-python scripts/cleaning/calendars/run_full_calendar_cleaning.py --no-merged-rows
+Prefer the orchestrator (writes listings → reviews → occupation → `master_data`):
+
+```powershell
+python scripts\cleaning\run_cleaning_pipeline.py
 ```
 
-End-to-end runtime on a MacBook (5 cities, ~48.4 M rows): roughly 22 minutes.
+Calendar only (advanced):
+
+```bash
+python scripts/cleaning/calendars/run_full_calendar_cleaning.py --occupation-only --no-merged-rows
+python scripts/cleaning/calendars/run_full_calendar_cleaning.py --cities nashville san_francisco --occupation-only
+```
+
+Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machine.
 
 ### Detailed cleaning documentation
 
-- `scripts/cleaning/calendars/calendar_cleaning_decisions.md` — every calendar cleaning rule in writing.
-- `data/processed/calendars/README.md` — what to use, field definitions, join example, warnings.
+- `scripts/cleaning/calendars/calendar_cleaning_decisions.md` — calendar-specific rules.
+- `scripts/cleaning/listing/README.md` — listing dtypes and null-fill logic.
+- `AGENTS.md` — pipeline order and authoritative path layout.
 
 ## Folder Structure
 
@@ -90,8 +94,8 @@ End-to-end runtime on a MacBook (5 cities, ~48.4 M rows): roughly 22 minutes.
 | `FUNCTIONS.md` | **Quick reference** — every toolkit function on one page |
 | `requirements.txt` | Python dependencies |
 | `environment.yml` | Conda environment (optional) |
-| `data/raw/` | Place raw Inside Airbnb files here (gitignored except READMEs) |
-| `data/processed/` | Cleaned datasets + per-domain READMEs and audits |
+| `data/raw/` | Place raw Inside Airbnb files here (typically gitignored) |
+| `data/processed/` | Cleaned outputs from the pipeline (gitignored locally; regenerate after clone) |
 | `notebooks/` | Notebooks for EDA and analysis |
 | `scripts/cleaning/` | Cleaning scripts per data stream (calendars, listing, reviews) |
 | `scripts/models/` | Modeling scripts (clustering, supervised learning, kNN) |
@@ -100,15 +104,31 @@ End-to-end runtime on a MacBook (5 cities, ~48.4 M rows): roughly 22 minutes.
 | `reports/figures/` | All plots (PNG, PDF) |
 | `results/` | Analytical outputs of the memo (cluster profiles, model metrics, revenue scenarios) |
 
-> Per-domain colocation: dataset hand-off READMEs live alongside the data they describe (`data/processed/<domain>/README.md`), and cleaning rule docs live alongside the code that implements them (`scripts/cleaning/<domain>/`). `results/` stays reserved for the analytical outputs that go into the investment memo.
+> Cleaning rules and dataset layout are documented alongside code (`scripts/cleaning/*/README*.md`) and `AGENTS.md`; large derived CSV folders under `data/processed/` are gitignored except what you regenerate locally after cloning.
+
+## Cleaning Pipeline Order
+
+To clean the Airbnb raw data, run the orchestrator:
+
+```powershell
+python scripts\cleaning\run_cleaning_pipeline.py
+```
+
+Do not run the individual listing, review, or calendar cleaning scripts manually unless debugging. The orchestrator manages dependencies and writes the standardized outputs.
+
+Execution order:
+1. **Listings**: creates `data/processed/listing_all_cleaned.csv`.
+2. **Reviews**: creates `data/processed/reviews_all_cleaned.csv`.
+3. **Calendar occupation**: uses `data/processed/listing_all_cleaned.csv` and creates `data/processed/occupation_all_cleaned.csv`.
+4. **Final join**: joins listings with occupation rates and creates `data/processed/master_data.csv`.
 
 ## Getting Started
 
 1. **Place raw data files** in `data/raw/`.
 2. **Open this folder in Cursor.**
-3. **Ask for your analysis** in the chat. Describe what you want.
-4. Cursor handles environment setup, script creation, execution, and output saving.
-5. **Retrieve outputs** from `results/` and `reports/figures/`.
+3. **Ask for your analysis** in the chat. Describe the data file, analysis goal, target variable if relevant, and desired outputs.
+4. Cursor handles everything: environment setup, script creation, execution, and output saving.
+5. **Retrieve your outputs** from `results/` and `reports/figures/`.
 
 ## What Happens Automatically
 
@@ -126,7 +146,11 @@ Mention three things in your prompt:
 2. **Analysis** — what you want done
 3. **Output names** — script in `scripts/`, results in `results/` and/or `reports/figures/`
 
-Example: *"Use `data/processed/calendars/all_cities_listing_occupancy.csv`, cluster listings with k-means and an elbow plot, save the script as `scripts/models/cluster_listings.py` and the results to `results/cluster_profiles.csv`."*
+Example — course-style classification: *"Use `data/raw/churn.csv`, train logistic regression, random forest, and boosted trees on target `Churn`, compare models, save script as `scripts/churn_models.py` and results to `results/churn_comparison.xlsx`."*
+
+Example — Airbnb term project modeling: *"Use `data/processed/master_data.csv`, cluster listings with k-means and save an elbow plot; save the script as `scripts/models/cluster_listings.py` and results to `results/cluster_profiles.csv`."*
+
+Same pattern for every request: dataset path (`data/raw/...` after cleaning pipeline, or processed outputs), analytic goal (+ target if supervised), script name under `scripts/`, and deliverables under `results/` / `reports/figures/`.
 
 ## If the Toolkit Doesn't Have a Function You Need
 

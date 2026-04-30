@@ -1,17 +1,20 @@
 """Calendar cleaning pipeline for the MBA706 Term Project.
 
 Reads raw Inside Airbnb calendar files from
-    data/Term Project/<City Name>/calendar.csv
+    data/raw/<City Name>/calendar.csv
 and produces, in a single streaming pass per city:
 
-* data/processed/calendars/<city>_calendar_cleaned.csv  (per-city, row-level)
-* data/processed/calendars/<city>_listing_occupancy.csv (per-city, listing-level)
-* data/processed/calendars/all_cities_calendar_cleaned.csv   (merged row-level)
-* data/processed/calendars/all_cities_listing_occupancy.csv  (merged listing-level)
-* data/processed/calendars/calendars_cleaning_audit.csv      (per-city audit)
+* data/processed/calendar/<city>/calendar_<city>_cleaned.csv   (per-city, row-level, optional)
+* data/processed/calendar/<city>/occupation_<city>_cleaned.csv (per-city, listing-level)
+* data/processed/calendar_all_cleaned.csv                      (merged row-level, optional)
+* data/processed/occupation_all_cleaned.csv                    (merged listing-level)
+* results/calendars/calendars_cleaning_audit.csv             (per-city audit)
 
 Cleaning rules and occupancy definition are documented in
     scripts/cleaning/calendars/calendar_cleaning_decisions.md
+
+Listing prices for revenue estimation come from the cleaned listings master:
+    data/processed/listing_all_cleaned.csv
 """
 
 from __future__ import annotations
@@ -26,12 +29,19 @@ os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
 os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 os.environ.setdefault("KMP_USE_SHM", "0")
+os.environ.setdefault("MPLCONFIGDIR", ".cache/matplotlib")
+os.environ.setdefault("XDG_CACHE_HOME", ".cache")
+os.environ.setdefault("MPLBACKEND", "Agg")
 
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-RAW_ROOT = PROJECT_ROOT / "data" / "Term Project"
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed" / "calendars"
+sys.path.insert(0, str(PROJECT_ROOT))
+
+RAW_ROOT = PROJECT_ROOT / "data" / "raw"
+PROCESSED_ROOT = PROJECT_ROOT / "data" / "processed"
+STANDARD_CALENDAR_DIR = PROJECT_ROOT / "data" / "processed" / "calendar"
+RESULTS_DIR = PROJECT_ROOT / "results" / "calendars"
 
 CITY_NAME_MAP = {
     "Hawaii": "hawaii",
@@ -64,34 +74,48 @@ OUTPUT_ROW_COLUMNS = [
 
 CHUNK_SIZE = 200_000
 PRICE_CLEAN_PATTERN = re.compile(r"[^0-9.\-]")
-PRICE_HARD_CAP = 10_000.0
-NIGHTS_HARD_CAP = 1125
-ALL_CITIES_ROW_FILE = PROCESSED_DIR / "all_cities_calendar_cleaned.csv"
-ALL_CITIES_LISTING_FILE = PROCESSED_DIR / "all_cities_listing_occupancy.csv"
-AUDIT_FILE = PROCESSED_DIR / "calendars_cleaning_audit.csv"
+ALL_CITIES_ROW_FILE = PROCESSED_ROOT / "calendar_all_cleaned.csv"
+ALL_CITIES_LISTING_FILE = PROJECT_ROOT / "data" / "processed" / "occupation_all_cleaned.csv"
+AUDIT_FILE = RESULTS_DIR / "calendars_cleaning_audit.csv"
+CLEANED_LISTINGS_FILE = PROJECT_ROOT / "data" / "processed" / "listing_all_cleaned.csv"
+MISSING_TEXT_VALUES = {"": pd.NA, "nan": pd.NA, "None": pd.NA}
+RANDOM_STATE = 42
 
 
 def load_listing_prices(city_dir: Path) -> pd.DataFrame:
-    """Read listings.csv from the given city dir and return [listing_id, listing_price].
+    """Read cleaned listings and return [listing_id, listing_price] for one city.
 
-    Inside Airbnb's calendar dumps no longer carry per-night prices, so the
-    nightly price used for revenue estimation must come from listings.csv.
+    Calendar price columns are empty in the raw data, so revenue estimation uses
+    the final cleaned listings file instead of reparsing raw city listings here.
     """
-    listings_file = city_dir / "listings.csv"
-    if not listings_file.exists():
-        return pd.DataFrame(columns=["listing_id", "listing_price"])
-    df = pd.read_csv(listings_file, usecols=["id", "price"])
-    df = df.rename(columns={"id": "listing_id"})
-    df["listing_price"] = (
-        df["price"]
-        .fillna("")
-        .astype(str)
-        .str.replace(PRICE_CLEAN_PATTERN, "", regex=True)
-        .replace("", pd.NA)
+    if not CLEANED_LISTINGS_FILE.exists():
+        raise FileNotFoundError(
+            f"Missing cleaned listing file: {CLEANED_LISTINGS_FILE}. "
+            "Run scripts/cleaning/listing/run_full_listing_cleaning.py first."
+        )
+
+    df = pd.read_csv(
+        CLEANED_LISTINGS_FILE,
+        usecols=["id", "price", "City"],
+        encoding="utf-8-sig",
+        low_memory=False,
     )
+    df = df.loc[df["City"].eq(city_dir.name), ["id", "price"]].copy()
+    df = df.rename(columns={"id": "listing_id", "price": "listing_price"})
+    df["listing_id"] = normalize_listing_id(df["listing_id"])
     df["listing_price"] = pd.to_numeric(df["listing_price"], errors="coerce")
-    df.loc[df["listing_price"] > PRICE_HARD_CAP, "listing_price"] = pd.NA
-    return df[["listing_id", "listing_price"]]
+    df = df.dropna(subset=["listing_id"])
+    return df[["listing_id", "listing_price"]].drop_duplicates("listing_id")
+
+
+def clean_missing_text(series: pd.Series) -> pd.Series:
+    """Trim strings and standardize project-wide missing tokens."""
+    return series.astype("string").str.strip().replace(MISSING_TEXT_VALUES)
+
+
+def normalize_listing_id(series: pd.Series) -> pd.Series:
+    """Normalize listing IDs to canonical strings (e.g., 5269.0 -> '5269')."""
+    return pd.to_numeric(clean_missing_text(series), errors="coerce").astype("Int64").astype("string")
 
 
 def render_progress(prefix: str, current: int, total: int) -> None:
@@ -110,16 +134,15 @@ def render_progress(prefix: str, current: int, total: int) -> None:
 
 def normalize_price(series: pd.Series) -> pd.Series:
     cleaned = (
-        series.fillna("")
-        .astype(str)
+        clean_missing_text(series)
         .str.replace(PRICE_CLEAN_PATTERN, "", regex=True)
-        .replace("", pd.NA)
+        .replace(MISSING_TEXT_VALUES)
     )
     return pd.to_numeric(cleaned, errors="coerce")
 
 
 def normalize_available(series: pd.Series) -> pd.Series:
-    normalized = series.fillna("").astype(str).str.strip().str.lower()
+    normalized = clean_missing_text(series).str.lower()
     mapped = normalized.map(
         {
             "t": True,
@@ -182,15 +205,20 @@ def process_city(
     city_label: str,
     csv_file: Path,
     city_dir: Path,
+    write_row_file: bool,
     write_merged: bool,
     merged_first_write: list[bool],
 ) -> dict:
-    output_row_file = PROCESSED_DIR / f"{city_snake}_calendar_cleaned.csv"
-    output_listing_file = PROCESSED_DIR / f"{city_snake}_listing_occupancy.csv"
-    for path in (output_row_file, output_listing_file):
+    output_row_file = STANDARD_CALENDAR_DIR / city_snake / f"calendar_{city_snake}_cleaned.csv"
+    output_listing_file = STANDARD_CALENDAR_DIR / city_snake / f"occupation_{city_snake}_cleaned.csv"
+    for path in (output_listing_file,):
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.exists():
             path.unlink()
+    if write_row_file:
+        output_row_file.parent.mkdir(parents=True, exist_ok=True)
+        if output_row_file.exists():
+            output_row_file.unlink()
 
     total_size = csv_file.stat().st_size
     rows_in = 0
@@ -199,9 +227,6 @@ def process_city(
     missing_required_rows_removed = 0
     invalid_date_rows_removed = 0
     invalid_available_rows_removed = 0
-    price_clipped_count = 0
-    min_nights_clipped_count = 0
-    max_nights_clipped_count = 0
     available_true_rows = 0
     available_false_rows = 0
     price_missing_before = 0
@@ -217,6 +242,10 @@ def process_city(
         reader = pd.read_csv(handle, usecols=EXPECTED_COLUMNS, chunksize=CHUNK_SIZE)
         for chunk_index, chunk in enumerate(reader):
             rows_in += len(chunk)
+
+            for col in EXPECTED_COLUMNS:
+                chunk[col] = clean_missing_text(chunk[col])
+            chunk["listing_id"] = normalize_listing_id(chunk["listing_id"])
 
             row_hashes = pd.util.hash_pandas_object(chunk[EXPECTED_COLUMNS], index=False)
             duplicate_mask = row_hashes.isin(seen_hashes)
@@ -245,26 +274,8 @@ def process_city(
             filtered["price"] = normalize_price(filtered["price"])
             filtered["adjusted_price"] = normalize_price(filtered["adjusted_price"])
 
-            price_clip_mask = filtered["price"].notna() & (filtered["price"] > PRICE_HARD_CAP)
-            price_clipped_count += int(price_clip_mask.sum())
-            filtered.loc[price_clip_mask, "price"] = pd.NA
-
-            adj_clip_mask = filtered["adjusted_price"].notna() & (filtered["adjusted_price"] > PRICE_HARD_CAP)
-            filtered.loc[adj_clip_mask, "adjusted_price"] = pd.NA
-
             filtered["minimum_nights"] = pd.to_numeric(filtered["minimum_nights"], errors="coerce")
             filtered["maximum_nights"] = pd.to_numeric(filtered["maximum_nights"], errors="coerce")
-
-            min_clip_mask = filtered["minimum_nights"].notna() & (
-                (filtered["minimum_nights"] < 1) | (filtered["minimum_nights"] > NIGHTS_HARD_CAP)
-            )
-            max_clip_mask = filtered["maximum_nights"].notna() & (
-                (filtered["maximum_nights"] < 1) | (filtered["maximum_nights"] > NIGHTS_HARD_CAP)
-            )
-            min_nights_clipped_count += int(min_clip_mask.sum())
-            max_nights_clipped_count += int(max_clip_mask.sum())
-            filtered["minimum_nights"] = filtered["minimum_nights"].clip(lower=1, upper=NIGHTS_HARD_CAP)
-            filtered["maximum_nights"] = filtered["maximum_nights"].clip(lower=1, upper=NIGHTS_HARD_CAP)
             filtered["minimum_nights"] = filtered["minimum_nights"].astype("Int64")
             filtered["maximum_nights"] = filtered["maximum_nights"].astype("Int64")
 
@@ -316,23 +327,27 @@ def process_city(
             price_non_null_after += int(filtered["price"].notna().sum())
             adjusted_price_non_null_after += int(filtered["adjusted_price"].notna().sum())
 
-            out_chunk = filtered[OUTPUT_ROW_COLUMNS]
-            rows_out += len(out_chunk)
+            rows_out += len(filtered)
 
-            out_chunk.to_csv(
-                output_row_file,
-                mode="w" if chunk_index == 0 else "a",
-                index=False,
-                header=chunk_index == 0,
-            )
+            if write_row_file:
+                out_chunk = filtered[OUTPUT_ROW_COLUMNS]
+                out_chunk.to_csv(
+                    output_row_file,
+                    mode="w" if chunk_index == 0 else "a",
+                    index=False,
+                    header=chunk_index == 0,
+                    encoding="utf-8-sig",
+                )
 
             if write_merged:
+                out_chunk = filtered[OUTPUT_ROW_COLUMNS]
                 first_write = merged_first_write[0]
                 out_chunk.to_csv(
                     ALL_CITIES_ROW_FILE,
                     mode="w" if first_write else "a",
                     index=False,
                     header=first_write,
+                    encoding="utf-8-sig",
                 )
                 merged_first_write[0] = False
 
@@ -379,7 +394,7 @@ def process_city(
             "est_annual_revenue_proxy",
         ]
         listing_table = listing_table[listing_columns]
-        listing_table.to_csv(output_listing_file, index=False)
+        listing_table.to_csv(output_listing_file, index=False, encoding="utf-8-sig")
 
     rows_removed_total = rows_in - rows_out
     percent_removed = 0 if rows_in == 0 else round((rows_removed_total / rows_in) * 100, 2)
@@ -404,7 +419,7 @@ def process_city(
         "city": city_snake,
         "city_label": city_label,
         "source_file": str(csv_file.relative_to(PROJECT_ROOT)),
-        "row_output_file": str(output_row_file.relative_to(PROJECT_ROOT)),
+        "row_output_file": str(output_row_file.relative_to(PROJECT_ROOT)) if write_row_file else "",
         "listing_output_file": str(output_listing_file.relative_to(PROJECT_ROOT)),
         "rows_in": rows_in,
         "rows_out": rows_out,
@@ -414,9 +429,6 @@ def process_city(
         "missing_required_rows_removed": missing_required_rows_removed,
         "invalid_date_rows_removed": invalid_date_rows_removed,
         "invalid_available_rows_removed": invalid_available_rows_removed,
-        "price_clipped_count": price_clipped_count,
-        "min_nights_clipped_count": min_nights_clipped_count,
-        "max_nights_clipped_count": max_nights_clipped_count,
         "calendar_price_missing_before": price_missing_before,
         "calendar_adjusted_price_missing_before": adjusted_price_missing_before,
         "calendar_price_non_null_after": price_non_null_after,
@@ -436,11 +448,11 @@ def merge_listing_tables(audit_rows: list[dict]) -> None:
     for row in audit_rows:
         path = PROJECT_ROOT / row["listing_output_file"]
         if path.exists() and path.stat().st_size > 0:
-            frames.append(pd.read_csv(path))
+            frames.append(pd.read_csv(path, encoding="utf-8-sig"))
     if not frames:
         return
     merged = pd.concat(frames, ignore_index=True)
-    merged.to_csv(ALL_CITIES_LISTING_FILE, index=False)
+    merged.to_csv(ALL_CITIES_LISTING_FILE, index=False, encoding="utf-8-sig")
 
 
 def main() -> None:
@@ -460,11 +472,17 @@ def main() -> None:
     parser.add_argument(
         "--no-merged-rows",
         action="store_true",
-        help="Skip writing the giant merged row-level file (all_cities_calendar_cleaned.csv).",
+        help="Skip writing the giant merged row-level file (calendar_all_cleaned.csv).",
+    )
+    parser.add_argument(
+        "--occupation-only",
+        action="store_true",
+        help="Only write listing-level occupation outputs; skip per-city and merged row-level calendar CSVs.",
     )
     args = parser.parse_args()
 
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    STANDARD_CALENDAR_DIR.mkdir(parents=True, exist_ok=True)
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     if not args.no_merged_rows and ALL_CITIES_ROW_FILE.exists():
         ALL_CITIES_ROW_FILE.unlink()
@@ -485,7 +503,8 @@ def main() -> None:
             city_label,
             csv_file,
             city_dir,
-            write_merged=not args.no_merged_rows,
+            write_row_file=not args.occupation_only,
+            write_merged=not args.no_merged_rows and not args.occupation_only,
             merged_first_write=merged_first_write,
         )
         audit_rows.append(result)
@@ -501,10 +520,10 @@ def main() -> None:
     merge_listing_tables(audit_rows)
 
     audit_df = pd.DataFrame(audit_rows)
-    audit_df.to_csv(AUDIT_FILE, index=False)
+    audit_df.to_csv(AUDIT_FILE, index=False, encoding="utf-8-sig")
     print(f"\nSaved audit summary to {AUDIT_FILE.relative_to(PROJECT_ROOT)}")
-    print(f"Saved merged listing table to {ALL_CITIES_LISTING_FILE.relative_to(PROJECT_ROOT)}")
-    if not args.no_merged_rows:
+    print(f"Saved merged occupation table to {ALL_CITIES_LISTING_FILE.relative_to(PROJECT_ROOT)}")
+    if not args.no_merged_rows and not args.occupation_only:
         print(f"Saved merged row table to {ALL_CITIES_ROW_FILE.relative_to(PROJECT_ROOT)}")
 
 

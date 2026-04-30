@@ -26,7 +26,7 @@ INSTRUCTIONS FOR CURSOR:
          g. train_*()             → Train one or more models
          h. evaluate_classifier_performance() → Detailed eval with ROC curves
          i. compare_models()      → Head-to-head comparison table
-    7. Save all plots to the 'plots/' directory.
+    7. Save all plots to the 'reports/figures/' directory.
     8. After every analysis, provide a BUSINESS INTERPRETATION, not just numbers.
 
 REPRODUCIBILITY:
@@ -111,7 +111,7 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.cluster.vq import kmeans2
 
 warnings.filterwarnings("ignore")
-os.makedirs(str(_TOOLKIT_ROOT / "plots"), exist_ok=True)
+os.makedirs(str(_TOOLKIT_ROOT / "reports" / "figures"), exist_ok=True)
 os.makedirs(os.environ.get("MPLCONFIGDIR", str(_TOOLKIT_ROOT / ".cache" / "matplotlib")), exist_ok=True)
 
 
@@ -647,7 +647,7 @@ def create_visualization(
     title=None,
     save_plot=True,
 ):
-    """Create common plot types. Saves to plots/ directory.
+    """Create common plot types. Saves to reports/figures/ directory.
 
     Args:
         dataset_name: Which dataset.
@@ -656,7 +656,7 @@ def create_visualization(
         y_column: Column for y-axis (scatter, boxplot).
         hue_column: Column for color-coding (scatter only).
         title: Custom plot title.
-        save_plot: Whether to save to plots/ directory.
+        save_plot: Whether to save to reports/figures/ directory.
 
     Returns:
         dict with status and saved file path.
@@ -696,7 +696,7 @@ def create_visualization(
                 df[[x_column]].boxplot(ax=ax)
         ax.set_title(title or f"{viz_type.replace('_', ' ').title()}: {x_column or ''}")
         plt.tight_layout()
-        plot_name = str(_TOOLKIT_ROOT / "plots" / f"{viz_type}_{x_column or 'all'}.png")
+        plot_name = str(_TOOLKIT_ROOT / "reports" / "figures" / f"{viz_type}_{x_column or 'all'}.png")
         if save_plot:
             fig.savefig(plot_name, dpi=150, bbox_inches="tight")
         _finalize_plot(fig)
@@ -773,7 +773,7 @@ def perform_pca(
             ax.set_ylabel("PC2")
             ax.set_title("PCA: PC1 vs PC2")
             plt.tight_layout()
-            plot_path = str(_TOOLKIT_ROOT / "plots" / "pca_scatter.png")
+            plot_path = str(_TOOLKIT_ROOT / "reports" / "figures" / "pca_scatter.png")
             if save_plot:
                 fig.savefig(plot_path, dpi=150, bbox_inches="tight")
             _finalize_plot(fig)
@@ -841,7 +841,7 @@ def perform_elbow_analysis(dataset_name="main", features=None, max_k=10, save_pl
         ax2.grid(True, alpha=0.3)
         plt.tight_layout()
         if save_plot:
-            fig.savefig(str(_TOOLKIT_ROOT / "plots" / "elbow_analysis.png"), dpi=150, bbox_inches="tight")
+            fig.savefig(str(_TOOLKIT_ROOT / "reports" / "figures" / "elbow_analysis.png"), dpi=150, bbox_inches="tight")
         _finalize_plot(fig)
         best_k = list(K_range)[np.argmax(sil_scores)]
         return {
@@ -931,7 +931,7 @@ def perform_hierarchical_clustering(
         ax.set_ylabel("Distance")
         plt.tight_layout()
         if save_plot:
-            fig.savefig(str(_TOOLKIT_ROOT / "plots" / "dendrogram.png"), dpi=150, bbox_inches="tight")
+            fig.savefig(str(_TOOLKIT_ROOT / "reports" / "figures" / "dendrogram.png"), dpi=150, bbox_inches="tight")
         _finalize_plot(fig)
         _data_store[dataset_name] = df
         return {
@@ -1214,7 +1214,7 @@ def train_decision_tree(
         ax.set_title(f"Decision Tree (max_depth={max_depth})")
         plt.tight_layout()
         if save_plot:
-            fig.savefig(str(_TOOLKIT_ROOT / "plots" / "decision_tree.png"), dpi=150, bbox_inches="tight")
+            fig.savefig(str(_TOOLKIT_ROOT / "reports" / "figures" / "decision_tree.png"), dpi=150, bbox_inches="tight")
         _finalize_plot(fig)
         _model_store[save_model_as] = {"model": model, "type": "decision_tree", "task": task_type}
         return result
@@ -1687,7 +1687,7 @@ def evaluate_classifier_performance(model_name, splits_name="splits", save_plot=
             results[name] = set_result
         plt.tight_layout()
         if save_plot:
-            fig.savefig(str(_TOOLKIT_ROOT / "plots" / f"roc_{model_name}.png"), dpi=150, bbox_inches="tight")
+            fig.savefig(str(_TOOLKIT_ROOT / "reports" / "figures" / f"roc_{model_name}.png"), dpi=150, bbox_inches="tight")
         _finalize_plot(fig)
         return {"status": "success", **results}
     except Exception as e:
@@ -1755,7 +1755,7 @@ def compare_models(model_names, splits_name="splits", save_plot=True):
                 ax.set_xlabel("")
                 plt.xticks(rotation=45, ha="right")
                 plt.tight_layout()
-                fig.savefig(str(_TOOLKIT_ROOT / "plots" / "model_comparison.png"), dpi=150, bbox_inches="tight")
+                fig.savefig(str(_TOOLKIT_ROOT / "reports" / "figures" / "model_comparison.png"), dpi=150, bbox_inches="tight")
                 _finalize_plot(fig)
         return {"status": "success", "comparison": comparison}
     except Exception as e:
@@ -1795,7 +1795,7 @@ def perform_sentiment_analysis(dataset_name="main", text_column=None):
         ax.set_title("Sentiment Distribution")
         ax.set_ylabel("Count")
         plt.tight_layout()
-        fig.savefig(str(_TOOLKIT_ROOT / "plots" / "sentiment.png"), dpi=150, bbox_inches="tight")
+        fig.savefig(str(_TOOLKIT_ROOT / "reports" / "figures" / "sentiment.png"), dpi=150, bbox_inches="tight")
         _finalize_plot(fig)
         return {
             "status": "success",
@@ -1834,7 +1834,7 @@ def create_bag_of_words(dataset_name="main", text_column=None, max_features=100,
         ax.imshow(wordcloud, interpolation="bilinear")
         ax.axis("off")
         ax.set_title("Word Cloud")
-        fig.savefig(str(_TOOLKIT_ROOT / "plots" / "wordcloud.png"), dpi=150, bbox_inches="tight")
+        fig.savefig(str(_TOOLKIT_ROOT / "reports" / "figures" / "wordcloud.png"), dpi=150, bbox_inches="tight")
         _finalize_plot(fig)
         return {
             "status": "success",
@@ -2029,7 +2029,7 @@ def execute_python_code(code, description="Custom analytics"):
 
     USE THIS ONLY when no pre-built function exists (e.g., PCA, SVM, time series,
     ANOVA, custom dashboards). Always use RANDOM_STATE=42 for reproducibility.
-    Save plots to 'plots/' directory.
+    Save plots to 'reports/figures/' directory.
 
     Has access to: _data_store, _model_store, RANDOM_STATE, and all imported libraries.
 
@@ -2053,7 +2053,7 @@ plt.scatter(components[:,0], components[:,1], alpha=0.5)
 plt.xlabel(f"PC1 ({pca.explained_variance_ratio_[0]:.1%})")
 plt.ylabel(f"PC2 ({pca.explained_variance_ratio_[1]:.1%})")
 plt.title("PCA Biplot")
-plt.savefig("plots/pca.png", dpi=150, bbox_inches="tight")
+plt.savefig("reports/figures/pca.png", dpi=150, bbox_inches="tight")
 plt.show()
             ''',
             description="PCA with 2 components"
