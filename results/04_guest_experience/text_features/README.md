@@ -1,6 +1,6 @@
 # Text features (`results/04_guest_experience/text_features/`)
 
-Artifacts produced by **`scripts/text_analysis/run_hierarchical_text_mining.py`** (see **`scripts/text_analysis/text_analytics_readme.md`**).
+Artifacts produced by **`scripts/models/text_analysis/run_hierarchical_text_mining.py`** (see **`scripts/models/text_analysis/text_analytics_readme.md`**).
 
 | File | Description |
 |------|-------------|

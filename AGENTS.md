@@ -59,7 +59,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 - `scripts/cleaning/<asset>/run_full_<asset>_cleaning.py` → `parents[3]`
 - `scripts/cleaning/run_cleaning_pipeline.py` → `parents[2]`
-- `scripts/text_analysis/*.py` → `parents[2]`
+- `scripts/models/text_analysis/*.py` → `parents[3]`
 
 ## Data Loader Rules
 
@@ -112,14 +112,14 @@ City slugs are lowercase snake_case (`hawaii`, `los_angeles`, `nashville`, `new_
 
 ## Text analytics & text mining (Unstructured Data)
 
-Governance and definitions (**Document** = listing-level text unit; **Corpus** = city/market collection; **BoW**; TF–IDF formula \(\mathrm{TFIDF}(t,d)=\mathrm{TF}(t,d)\times\mathrm{IDF}(t)\)) live in **`scripts/text_analysis/text_analytics_readme.md`**. Follow that document for methodology and outputs.
+Governance and definitions (**Document** = listing-level text unit; **Corpus** = city/market collection; **BoW**; TF–IDF formula \(\mathrm{TFIDF}(t,d)=\mathrm{TF}(t,d)\times\mathrm{IDF}(t)\)) live in **`scripts/models/text_analysis/text_analytics_readme.md`**. Follow that document for methodology and outputs.
 
 ### Rules
 
 1. **Inputs:** Use `data/processed/reviews_all_cleaned.csv` (canonical) or **`data/processed/all_reviews_cleaned.csv`** if present as an alias; join listing→city from **`data/processed/master_data.csv`** (`id`, `City`).
-2. **Toolkit:** Use `load_data()` / `load_excel_data()` for routine CSV loads. Hierarchical TF–IDF (one matrix per **listing** as document + one matrix for **city**-level corpora) is **not** implemented in `create_tfidf_features()`; use **`scripts/text_analysis/run_hierarchical_text_mining.py`**, which applies scikit-learn `TfidfVectorizer` with the preprocessing/stemming described in the text-analytics README (approved project pattern for this deliverable).
+2. **Toolkit:** Use `load_data()` / `load_excel_data()` for routine CSV loads. Hierarchical TF–IDF (one matrix per **listing** as document + one matrix for **city**-level corpora) is **not** implemented in `create_tfidf_features()`; use **`scripts/models/text_analysis/run_hierarchical_text_mining.py`**, which applies scikit-learn `TfidfVectorizer` with the preprocessing/stemming described in the text-analytics README (approved project pattern for this deliverable).
 3. **Chunked reads:** The merged reviews file can be multi-GB. **Streaming / chunked `pandas.read_csv`** for aggregation by `listing_id` is allowed and required when the full file does not fit in memory.
-4. **Outputs:** Save hierarchical text-mining artefacts (sparse matrices `.npz`, vocabularies `.json`, row indices, structured CSVs) under **`results/04_guest_experience/text_features/`** (see README there and in `scripts/text_analysis/text_analytics_readme.md`). Other guest-experience memo tables stay in **`results/04_guest_experience/`** as needed.
+4. **Outputs:** Save hierarchical text-mining artefacts (sparse matrices `.npz`, vocabularies `.json`, row indices, structured CSVs) under **`results/04_guest_experience/text_features/`** (see README there and in `scripts/models/text_analysis/text_analytics_readme.md`). Other guest-experience memo tables stay in **`results/04_guest_experience/`** as needed.
 5. **Reproducibility:** `RANDOM_STATE = 42` for any stochastic step (e.g. sampling listings via `--max-listings`).
 
 ## Before Writing Any Analysis Script, Confirm

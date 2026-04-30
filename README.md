@@ -121,8 +121,7 @@ Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machi
 | `scripts/cleaning/` | Cleaning scripts per data stream (calendars, listing, reviews) + orchestrator |
 | `scripts/eda/` | EDA inventory scripts for raw and processed data |
 | `scripts/market_analysis/` | Q1–Q4 market-level analysis scripts (risk-adjusted revenue, price/occupancy/revenue, saturation, seasonality) |
-| `scripts/models/` | Modeling scripts (clustering, supervised learning, kNN) |
-| `scripts/text_analysis/` | Text analytics: TF–IDF pipeline, sentiment, methodology (`text_analytics_readme.md`) |
+| `scripts/models/` | Modeling scripts: clustering (`segmentation_kmeans.py`), investment decision steps, kNN, **text analytics** (`models/text_analysis/`: TF–IDF pipeline, `text_analytics_readme.md`) |
 | `reports/` | Final deliverables (memo, slides) |
 | `reports/figures/` | All plots (PNG, PDF) — see `reports/figures/market_analysis/` for Q1–Q4 charts |
 | `results/` | Analytical outputs organised by **business question** (`01_market_analysis/`, `02_segmentation/`, `03_pricing_models/`, `04_guest_experience/`, `05_investment_decision/`). Cleaning audits live inside `01_market_analysis/` (per-asset subfolders: `01_market_analysis/listing/`, `01_market_analysis/calendars/`, `01_market_analysis/reviews/`). See `results/README.md`. |

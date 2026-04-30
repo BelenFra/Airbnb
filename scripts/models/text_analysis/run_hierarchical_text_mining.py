@@ -1,12 +1,12 @@
 """
 Hierarchical text mining entry point (listing-level + city-level corpora).
 
-Methodology: scripts/text_analysis/text_analytics_readme.md
+Methodology: scripts/models/text_analysis/text_analytics_readme.md
 Outputs: results/04_guest_experience/text_features/
 
 Example:
-  python scripts/text_analysis/run_hierarchical_text_mining.py
-  python scripts/text_analysis/run_hierarchical_text_mining.py --max-listings 2000 --skip-sentiment
+  python scripts/models/text_analysis/run_hierarchical_text_mining.py
+  python scripts/models/text_analysis/run_hierarchical_text_mining.py --max-listings 2000 --skip-sentiment
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ os.environ["MPLCONFIGDIR"] = ".cache/matplotlib"
 os.environ["XDG_CACHE_HOME"] = ".cache"
 os.environ["MPLBACKEND"] = "Agg"
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 

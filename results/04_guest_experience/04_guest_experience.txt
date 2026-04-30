@@ -102,4 +102,4 @@ Supporting outputs:
 Reproducibility
 ---------------
   Guest Q1–Q4 script: scripts/04_guest_experience/run_guest_experience_questions.py
-  Text features pipeline: scripts/text_analysis/run_hierarchical_text_mining.py
+  Text features pipeline: scripts/models/text_analysis/run_hierarchical_text_mining.py

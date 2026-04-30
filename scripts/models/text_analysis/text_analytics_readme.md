@@ -2,7 +2,7 @@
 
 This document defines the **Unstructured Data and Text Mining** framework used in the Airbnb project: how we turn guest review text into structured features for listing-level and city-level analysis, and how those pieces connect to the Investment Memo.
 
-**Code & methodology location:** This folder (`scripts/text_analysis/`) contains this README, preprocessing/core modules, and **`run_hierarchical_text_mining.py`**.
+**Code & methodology location:** This folder (`scripts/models/text_analysis/`) contains this README, preprocessing/core modules, and **`run_hierarchical_text_mining.py`**.
 
 ## 1. Objects: Document and Corpus
 
@@ -77,7 +77,7 @@ With the usual sklearn definition, \(\mathrm{IDF}(t)\) reflects how rare \(t\) i
 | City sentiment summary | `results/04_guest_experience/text_features/city_sentiment_summary.csv` | Mean polarity, counts by `City`. |
 | City top terms | `results/04_guest_experience/text_features/city_corpus_top_terms.csv` | Top weighted terms per city. |
 
-**Entry point:** `scripts/text_analysis/run_hierarchical_text_mining.py`
+**Entry point:** `scripts/models/text_analysis/run_hierarchical_text_mining.py`
 
 **Inputs (resolved in code):**
 

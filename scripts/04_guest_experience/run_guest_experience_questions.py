@@ -446,7 +446,7 @@ def run_q4_top_performer_terms(master: pd.DataFrame) -> None:
 Run the text mining pipeline first:
 
 ```text
-python scripts/text_analysis/run_hierarchical_text_mining.py --skip-sentiment
+python scripts/models/text_analysis/run_hierarchical_text_mining.py --skip-sentiment
 ```
 
 Then re-run:
@@ -523,11 +523,11 @@ Structured like `results/01_market_analysis/`: one folder per question with `q*_
 | `q2_five_star_drivers/` | Which cleanliness / check-in / communication / location scores associate with ≥4.9 overall? |
 | `q3_operational_investments/` | Operational proxies (amenities, instant book) vs review outcomes |
 | `q4_top_performer_praise/` | Language that distinguishes top-quartile listings (TF‑IDF deviations) |
-| `text_features/` | sparse matrices and vocabulary from `scripts/text_analysis/run_hierarchical_text_mining.py` |
+| `text_features/` | sparse matrices and vocabulary from `scripts/models/text_analysis/run_hierarchical_text_mining.py` |
 
 **Scripts**
 
-- Text mining: `scripts/text_analysis/run_hierarchical_text_mining.py`
+- Text mining: `scripts/models/text_analysis/run_hierarchical_text_mining.py`
 - This synthesis: `scripts/04_guest_experience/run_guest_experience_questions.py`
 """
     (RESULTS_ROOT / "README.md").write_text(idx, encoding="utf-8")
