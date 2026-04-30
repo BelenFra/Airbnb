@@ -251,8 +251,8 @@ Avalon 2BR condos stand out because they combine high nightly price with enough 
 
 ### Step 1 Figures
 
-- `reports/figures/step1_top_candidate_revenue.png`
-- `reports/figures/step1_best_segment_by_city.png`
+- `reports/figures/05_investment_decision/step1_top_candidate_revenue.png`
+- `reports/figures/05_investment_decision/step1_best_segment_by_city.png`
 
 ## Step 2: k-NN Comparable Listing Validation
 
@@ -303,7 +303,7 @@ The k-NN results strengthen the recommendation. The closest real comparable list
 
 ### Step 2 Figure
 
-- `reports/figures/step2_knn_validation_comparison.png`
+- `reports/figures/05_investment_decision/step2_knn_validation_comparison.png`
 
 ## Step 3: Revenue Scenarios and Bootstrap Uncertainty
 
@@ -356,9 +356,9 @@ The bootstrap interval supports the conclusion that typical revenue is attractiv
 
 ### Step 3 Figures
 
-- `reports/figures/step3_revenue_scenarios.png`
-- `reports/figures/step3_bootstrap_median_uncertainty.png`
-- `reports/figures/step3_top_candidate_sensitivity.png`
+- `reports/figures/05_investment_decision/step3_revenue_scenarios.png`
+- `reports/figures/05_investment_decision/step3_bootstrap_median_uncertainty.png`
+- `reports/figures/05_investment_decision/step3_top_candidate_sensitivity.png`
 
 ## Step 4: Risk Decomposition
 
@@ -437,11 +437,11 @@ Avalon 2BR condos remain the top risk-adjusted single-property candidate despite
 
 ### Step 4 Figures
 
-- `reports/figures/step4_risk_score_by_candidate.png`
-- `reports/figures/step4_risk_components_heatmap.png`
-- `reports/figures/step4_city_seasonality.png`
-- `reports/figures/step4_monthly_occupancy_by_city.png`
-- `reports/figures/step4_monthly_occupancy_index_by_city.png`
+- `reports/figures/05_investment_decision/step4_risk_score_by_candidate.png`
+- `reports/figures/05_investment_decision/step4_risk_components_heatmap.png`
+- `reports/figures/05_investment_decision/step4_city_seasonality.png`
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_by_city.png`
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_index_by_city.png`
 
 ## Step 5: Two-Property Portfolio Diversification
 
@@ -511,9 +511,9 @@ Business interpretation: lowest risk but much lower revenue potential.
 
 ### Step 5 Figures
 
-- `reports/figures/step5_portfolio_revenue_vs_risk.png`
-- `reports/figures/step5_recommended_portfolios.png`
-- `reports/figures/step5_city_occupancy_correlation.png`
+- `reports/figures/05_investment_decision/step5_portfolio_revenue_vs_risk.png`
+- `reports/figures/05_investment_decision/step5_recommended_portfolios.png`
+- `reports/figures/05_investment_decision/step5_city_occupancy_correlation.png`
 
 ## Step 5B: Efficient Frontier
 
@@ -562,7 +562,7 @@ The efficient frontier confirms that the diversified LA + Hawaii portfolio is th
 
 ### Step 5B Figure
 
-- `reports/figures/step5b_efficient_frontier.png`
+- `reports/figures/05_investment_decision/step5b_efficient_frontier.png`
 
 ## Final Business Interpretation
 

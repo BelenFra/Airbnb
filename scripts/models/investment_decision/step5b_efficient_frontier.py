@@ -34,7 +34,7 @@ from pathlib import Path
 project_root = Path("''' + str(PROJECT_ROOT) + r'''")
 results_dir = project_root / "results" / "investment_decision"
 reports_dir = project_root / "reports" / "investment_decision"
-figures_dir = project_root / "reports" / "figures"
+figures_dir = project_root / "reports" / "figures" / "05_investment_decision"
 results_dir.mkdir(parents=True, exist_ok=True)
 reports_dir.mkdir(parents=True, exist_ok=True)
 figures_dir.mkdir(parents=True, exist_ok=True)
@@ -132,7 +132,7 @@ with report_path.open("w", encoding="utf-8") as handle:
     handle.write("- The frontier is still useful as a decision-support visualization for revenue-risk tradeoffs.\n\n")
     handle.write("## Files Created\n\n")
     handle.write("- `results/investment_decision/step5b_efficient_frontier_portfolios.csv`\n")
-    handle.write("- `reports/figures/step5b_efficient_frontier.png`\n\n")
+    handle.write("- `reports/figures/05_investment_decision/step5b_efficient_frontier.png`\n\n")
     handle.write("## Key Frontier Options\n\n")
     handle.write(
         f"- Lowest-risk frontier portfolio: {lowest_risk_frontier['property_1']} + {lowest_risk_frontier['property_2']}. "

@@ -2,8 +2,8 @@
 
 ## Figures Created
 
-- `reports/figures/step4_monthly_occupancy_by_city.png`: monthly occupancy rate for each city.
-- `reports/figures/step4_monthly_occupancy_index_by_city.png`: each city's monthly occupancy indexed to its own average.
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_by_city.png`: monthly occupancy rate for each city.
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_index_by_city.png`: each city's monthly occupancy indexed to its own average.
 
 ## Seasonality Summary
 

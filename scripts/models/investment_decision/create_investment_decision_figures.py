@@ -34,7 +34,7 @@ def main() -> None:
 from pathlib import Path
 
 project_root = Path("''' + str(PROJECT_ROOT) + r'''")
-figures_dir = project_root / "reports" / "figures"
+figures_dir = project_root / "reports" / "figures" / "05_investment_decision"
 reports_dir = project_root / "reports" / "investment_decision"
 figures_dir.mkdir(parents=True, exist_ok=True)
 reports_dir.mkdir(parents=True, exist_ok=True)
@@ -159,12 +159,12 @@ report_path = reports_dir / "figures_index.md"
 with report_path.open("w", encoding="utf-8") as handle:
     handle.write("# Investment Decision Figures Index\n\n")
     handle.write("These figures support Steps 1-3 of the investment decision analysis.\n\n")
-    handle.write("- `reports/figures/step1_top_candidate_revenue.png`: ranks the top budget-feasible segments by median annual revenue.\n")
-    handle.write("- `reports/figures/step1_best_segment_by_city.png`: compares each city's strongest feasible segment.\n")
-    handle.write("- `reports/figures/step2_knn_validation_comparison.png`: compares segment medians with k-NN comparable-listing medians.\n")
-    handle.write("- `reports/figures/step3_revenue_scenarios.png`: shows conservative, moderate, and optimistic revenue cases.\n")
-    handle.write("- `reports/figures/step3_bootstrap_median_uncertainty.png`: shows bootstrap uncertainty around median revenue.\n")
-    handle.write("- `reports/figures/step3_top_candidate_sensitivity.png`: stress-tests the current top candidate.\n")
+    handle.write("- `reports/figures/05_investment_decision/step1_top_candidate_revenue.png`: ranks the top budget-feasible segments by median annual revenue.\n")
+    handle.write("- `reports/figures/05_investment_decision/step1_best_segment_by_city.png`: compares each city's strongest feasible segment.\n")
+    handle.write("- `reports/figures/05_investment_decision/step2_knn_validation_comparison.png`: compares segment medians with k-NN comparable-listing medians.\n")
+    handle.write("- `reports/figures/05_investment_decision/step3_revenue_scenarios.png`: shows conservative, moderate, and optimistic revenue cases.\n")
+    handle.write("- `reports/figures/05_investment_decision/step3_bootstrap_median_uncertainty.png`: shows bootstrap uncertainty around median revenue.\n")
+    handle.write("- `reports/figures/05_investment_decision/step3_top_candidate_sensitivity.png`: stress-tests the current top candidate.\n")
 
 print("Saved investment decision figures.")
 print(report_path)
