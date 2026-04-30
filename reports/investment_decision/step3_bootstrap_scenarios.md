@@ -22,11 +22,11 @@ Step 3 estimates conservative, moderate, and optimistic annual revenue for the v
 
 ## Results
 
-- Los Angeles / Avalon / Entire condo / 2BR: conservative $43,914, moderate $123,823, optimistic $180,076. Bootstrap 90% interval for median revenue: $71,380-$143,850. k-NN median validation revenue: $142,767.
-- Los Angeles / Avalon / Entire home / 2BR: conservative $33,418, moderate $85,925, optimistic $121,769. Bootstrap 90% interval for median revenue: $76,471-$111,690. k-NN median validation revenue: $112,128.
-- Hawaii / North Kona / Entire serviced apartment / 1BR: conservative $22,596, moderate $66,063, optimistic $84,240. Bootstrap 90% interval for median revenue: $60,716-$84,240. k-NN median validation revenue: $84,240.
-- Los Angeles / Hollywood Hills / Entire home / 2BR: conservative $17,091, moderate $61,975, optimistic $94,492. Bootstrap 90% interval for median revenue: $32,940-$82,628. k-NN median validation revenue: $83,268.
-- Los Angeles / Beverly Hills / Entire rental unit / 2BR: conservative $23,422, moderate $54,486, optimistic $70,205. Bootstrap 90% interval for median revenue: $44,823-$58,718. k-NN median validation revenue: $60,756.
+- Los Angeles / Hollywood Hills West / Entire home / 2BR: conservative $20,100, moderate $47,628, optimistic $78,957. Bootstrap 90% interval for median revenue: $37,638-$63,627. k-NN median validation revenue: $47,640.
+- Los Angeles / Hollywood Hills / Entire home / 2BR: conservative $21,612, moderate $45,592, optimistic $69,255. Bootstrap 90% interval for median revenue: $35,820-$50,946. k-NN median validation revenue: $37,980.
+- Los Angeles / Silver Lake / Entire home / 2BR: conservative $21,948, moderate $45,138, optimistic $59,181. Bootstrap 90% interval for median revenue: $33,759-$50,164. k-NN median validation revenue: $32,706.
+- New York / Midtown / Entire rental unit / 0BR: conservative $19,588, moderate $45,108, optimistic $77,648. Bootstrap 90% interval for median revenue: $36,210-$60,288. k-NN median validation revenue: $34,565.
+- Los Angeles / Manhattan Beach / Entire home / 2BR: conservative $18,207, moderate $43,968, optimistic $64,850. Bootstrap 90% interval for median revenue: $20,628-$54,062. k-NN median validation revenue: $21,060.
 
 ## Interpretation
 

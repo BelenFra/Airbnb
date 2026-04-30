@@ -17,7 +17,7 @@ from mba706_toolkit import execute_python_code, load_data
 
 
 def main() -> None:
-    month_metrics = PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step1_calendar_city_month_metrics.csv"
+    month_metrics = PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step4_calendar_city_month_metrics.csv"
     result = load_data(str(month_metrics), dataset_name="city_month_metrics")
     if result.get("status") != "success":
         raise RuntimeError(result)
@@ -88,6 +88,9 @@ seasonality = seasonality.sort_values("peak_to_trough_gap", ascending=False)
 report_path = reports_dir / "time_based_figures.md"
 with report_path.open("w", encoding="utf-8") as handle:
     handle.write("# Time-Based Calendar Figures\n\n")
+    handle.write("## Data Used\n\n")
+    handle.write("- Monthly occupancy comes from `data/processed/calendars/calendar_all_cleaned.csv` through `data/processed/investment_decision/step4_calendar_city_month_metrics.csv`.\n")
+    handle.write("- This keeps time-based risk separate from `master_data.csv`, which is listing-level and annualized.\n\n")
     handle.write("## Figures Created\n\n")
     handle.write("- `reports/figures/05_investment_decision/step4_monthly_occupancy_by_city.png`: monthly occupancy rate for each city.\n")
     handle.write("- `reports/figures/05_investment_decision/step4_monthly_occupancy_index_by_city.png`: each city's monthly occupancy indexed to its own average.\n\n")

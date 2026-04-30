@@ -6,10 +6,10 @@ This step defines what a $500,000 investor can plausibly buy in each market, the
 
 ## Data Used
 
-- Calendar files are the operating-performance source of truth for occupancy. They provide listing-level booked days, available days, and calendar days.
-- Calendar price is used when available. If calendar price is missing, the cleaned listing price is used as the nightly-price fallback.
-- Cleaned listings provide city, neighborhood, property type, bedroom count, review score, and listing attributes.
-- Annual revenue is computed as `nightly price x calendar occupancy rate x 365`.
+- `data/processed/master_data.csv` is the source of truth for this step. It already merges listing attributes with calendar-derived operating fields.
+- `estimated_revenue_l365d` is used as observed annual revenue when available.
+- `occupancy_rate_proxy` and `estimated_occupancy_l365d` provide listing-level occupancy information.
+- Nightly price is inferred as `estimated revenue / estimated occupied nights` when possible; otherwise, listing `price` is used as the fallback.
 
 ## Housing Feasibility Rules Used
 
@@ -26,14 +26,13 @@ These rules are based on the current housing-market research supplied for the pr
 - Entire home/apartment listings only.
 - Plausible property types: condo, rental unit, home, townhouse, guest suite, serviced apartment, loft, bungalow, cottage, or apartment.
 - Nightly price between $50 and $1,500.
-- Calendar occupancy rate between 0% and 100%.
+- Calendar-derived occupancy proxy between 0% and 100%.
 - Computed annual revenue between $1,000 and $250,000.
 - Decision-ready segments require at least 25 comparable listings and median review score of at least 4.5.
 
 ## Files Created
 
 - `data/processed/investment_decision/step1_calendar_listing_metrics.csv`
-- `data/processed/investment_decision/step1_calendar_city_month_metrics.csv`
 - `data/processed/investment_decision/step1_budget_feasible_listing_metrics.csv`
 - `data/processed/investment_decision/step1_all_budget_feasible_candidate_segments.csv`
 - `data/processed/investment_decision/step1_decision_ready_candidate_segments.csv`
@@ -42,25 +41,25 @@ These rules are based on the current housing-market research supplied for the pr
 
 ## Results
 
-Budget-feasible listing records analyzed: 34,149
+Budget-feasible listing records analyzed: 38,712
 
-All budget-feasible segments created: 3,182
+All budget-feasible segments created: 3,351
 
-Decision-ready segments after sample/review filters: 209
+Decision-ready segments after sample/review filters: 243
 
 Top decision-ready candidate segments:
 
-- Los Angeles / Avalon / Entire condo / 2BR: median annual revenue $123,823, median occupancy 47.9%, median nightly price $624, 47 comparable listings, median review score 4.67.
-- Los Angeles / Avalon / Entire home / 2BR: median annual revenue $85,925, median occupancy 49.6%, median nightly price $463, 33 comparable listings, median review score 4.61.
-- Hawaii / North Kona / Entire serviced apartment / 1BR: median annual revenue $66,063, median occupancy 96.2%, median nightly price $240, 27 comparable listings, median review score 4.72.
-- Los Angeles / Hollywood Hills / Entire home / 2BR: median annual revenue $61,975, median occupancy 50.1%, median nightly price $360, 43 comparable listings, median review score 4.95.
-- Los Angeles / Beverly Hills / Entire rental unit / 2BR: median annual revenue $54,486, median occupancy 63.0%, median nightly price $225, 108 comparable listings, median review score 4.67.
-- Los Angeles / Hollywood Hills West / Entire home / 2BR: median annual revenue $50,700, median occupancy 39.5%, median nightly price $383, 37 comparable listings, median review score 4.94.
-- Hawaii / Lahaina / Entire home / 1BR: median annual revenue $47,285, median occupancy 42.7%, median nightly price $257, 27 comparable listings, median review score 4.85.
-- Los Angeles / Echo Park / Entire home / 2BR: median annual revenue $46,580, median occupancy 60.4%, median nightly price $223, 32 comparable listings, median review score 4.92.
-- Hawaii / North Shore Kauai / Entire rental unit / 1BR: median annual revenue $44,982, median occupancy 78.4%, median nightly price $185, 159 comparable listings, median review score 4.91.
-- Hawaii / Koloa-Poipu / Entire condo / 0BR: median annual revenue $44,628, median occupancy 50.5%, median nightly price $242, 28 comparable listings, median review score 4.86.
+- Los Angeles / Hollywood Hills West / Entire home / 2BR: median annual revenue $47,628, median occupancy 38.1%, median nightly price $376, 46 comparable listings, median review score 4.95.
+- Los Angeles / Hollywood Hills / Entire home / 2BR: median annual revenue $45,592, median occupancy 50.4%, median nightly price $356, 52 comparable listings, median review score 4.94.
+- Los Angeles / Silver Lake / Entire home / 2BR: median annual revenue $45,138, median occupancy 51.0%, median nightly price $250, 54 comparable listings, median review score 4.95.
+- New York / Midtown / Entire rental unit / 0BR: median annual revenue $45,108, median occupancy 49.6%, median nightly price $252, 151 comparable listings, median review score 4.61.
+- Los Angeles / Manhattan Beach / Entire home / 2BR: median annual revenue $43,968, median occupancy 34.2%, median nightly price $390, 26 comparable listings, median review score 4.87.
+- Nashville / District 19 / Entire home / 4BR: median annual revenue $42,000, median occupancy 13.7%, median nightly price $373, 107 comparable listings, median review score 4.94.
+- New York / Fort Hamilton / Entire rental unit / 0BR: median annual revenue $41,055, median occupancy 10.1%, median nightly price $161, 50 comparable listings, median review score 4.67.
+- Nashville / District 19 / Entire condo / 3BR: median annual revenue $40,382, median occupancy 10.1%, median nightly price $321, 30 comparable listings, median review score 4.92.
+- Los Angeles / Santa Monica / Entire home / 2BR: median annual revenue $39,960, median occupancy 33.2%, median nightly price $302, 27 comparable listings, median review score 4.92.
+- Los Angeles / Highland Park / Entire home / 2BR: median annual revenue $39,420, median occupancy 52.9%, median nightly price $221, 37 comparable listings, median review score 4.95.
 
 ## Interpretation
 
-This step does not choose the final investment yet. It creates the defensible candidate universe using calendar-based operating performance. The next step should use k-nearest-neighbor comparable listings to validate whether the highest-ranked segments are supported by similar individual properties, not just by segment medians.
+This step does not choose the final investment yet. It creates the defensible candidate universe using the merged master dataset's calendar-derived operating performance. The next step should use k-nearest-neighbor comparable listings to validate whether the highest-ranked segments are supported by similar individual properties, not just by segment medians.

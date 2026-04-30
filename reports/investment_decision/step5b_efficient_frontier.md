@@ -18,9 +18,9 @@ This extension turns the Step 5 portfolio table into a simple efficient frontier
 
 ## Key Frontier Options
 
-- Lowest-risk frontier portfolio: Los Angeles / Echo Park / Entire home / 2BR + Hawaii / North Shore Kauai / Entire rental unit / 0BR. Revenue $83,036, risk 0.00.
-- Highest-revenue frontier portfolio: Los Angeles / Avalon / Entire condo / 2BR + Los Angeles / Avalon / Entire home / 2BR. Revenue $209,748, risk 0.83.
-- Best balanced-score portfolio: Los Angeles / Avalon / Entire condo / 2BR + Hawaii / North Kona / Entire serviced apartment / 1BR. Revenue $189,886, risk 0.18.
+- Lowest-risk frontier portfolio: New York / Fort Hamilton / Entire rental unit / 0BR + Los Angeles / Culver City / Entire home / 2BR. Revenue $78,795, risk 0.00.
+- Highest-revenue frontier portfolio: Los Angeles / Hollywood Hills West / Entire home / 2BR + Los Angeles / Hollywood Hills / Entire home / 2BR. Revenue $93,220, risk 0.84.
+- Best balanced-score portfolio: Los Angeles / Hollywood Hills West / Entire home / 2BR + New York / Midtown / Entire rental unit / 0BR. Revenue $92,736, risk 0.24.
 
 ## Business Interpretation
 

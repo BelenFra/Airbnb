@@ -2,645 +2,302 @@
 
 ## Executive Recommendation
 
-The strongest single-property recommendation is:
+The strongest single-property recommendation after switching to the merged master dataset is:
 
-**Los Angeles / Avalon / Entire condo / 2 bedrooms**
+**Los Angeles / Hollywood Hills West / Entire home / 2 bedrooms**
 
-This option is the top budget-feasible candidate after applying the $500,000 affordability rules, calendar-based operating performance, k-nearest-neighbor validation, scenario analysis, bootstrap uncertainty, and risk decomposition.
+This is the top budget-feasible candidate after applying the $500,000 affordability rules, master-data operating performance, k-nearest-neighbor validation, scenario analysis, bootstrap uncertainty, and risk decomposition.
 
 The best risk-aware two-property portfolio is:
 
-**Los Angeles / Avalon / Entire condo / 2 bedrooms + Hawaii / North Kona / Entire serviced apartment / 1 bedroom**
+**Los Angeles / Hollywood Hills West / Entire home / 2BR + New York / Midtown / Entire rental unit / studio**
 
-This portfolio gives up some revenue versus the maximum-revenue concentrated portfolio, but it substantially improves diversification because Los Angeles and Hawaii show a negative monthly occupancy correlation in the calendar data.
+This portfolio is not the lowest-risk pair, but it is the best risk-adjusted diversified portfolio among the frontier candidates. It pairs the highest-revenue single-property candidate with a different city and property type, reducing concentration risk relative to buying two Los Angeles properties.
+
+## Important Data Change
+
+The investment section now uses:
+
+`data/processed/master_data.csv`
+
+This file already merges listing attributes with calendar-derived operating fields. Step 1 no longer reads separate listings and calendar files directly. Instead, it uses:
+
+- `estimated_revenue_l365d` as the annual revenue source when available
+- `estimated_occupancy_l365d` and `occupancy_rate_proxy` as calendar-derived occupancy measures
+- listing `price` as a fallback when revenue/occupancy cannot infer a nightly rate
+- listing attributes such as city, neighborhood, room type, property type, bedrooms, reviews, and ratings
+
+The one important modeling split is now explicit: `master_data.csv` is listing-level and annualized, while `data/processed/calendar_all_cleaned.csv` contains the date-level calendar records needed for monthly seasonality. The investment economics use master data; the time-based risk analysis uses the merged calendar file. `calendar_last_scraped` is used as a freshness/snapshot-consistency check from master data, not as a seasonality variable.
+
+Supporting processed inputs (when reproducing or auditing the pipeline):
+
+- `data/processed/listing_all_cleaned.csv`
+- `data/processed/occupation_all_cleaned.csv` (listing-level calendar merge consumed when building `master_data.csv`)
+- Per-city optional row-level calendars: `data/processed/calendar/<city_slug>/calendar_<city_slug>_cleaned.csv`
 
 ## Core Investment Questions Answered
 
 ### 1. Given a $500,000 budget, what is the optimal property configuration and where?
 
-The recommended single-property configuration is a **2-bedroom entire condo in Avalon, Los Angeles**.
+The recommended single-property configuration is a **2-bedroom entire home in Hollywood Hills West, Los Angeles**.
 
 Key operating metrics:
 
-- Comparable listings in segment: `47`
-- Median nightly price: `$624`
-- Median calendar occupancy: `47.9%`
-- Median annual revenue: `$123,823`
-- Median review score: `4.67`
+- Comparable listings in segment: `46`
+- Median nightly price: `$376`
+- Median occupancy proxy: `38.1%`
+- Median annual revenue: `$47,628`
+- Median review score: `4.95`
+- k-NN comparable median annual revenue: `$47,640`
 - Budget feasibility rule: Los Angeles can plausibly reach 1-2 bedroom condo/apartment-style units near the $500,000 budget range.
 
-This recommendation is based on calendar-derived performance rather than only listing-level summary fields. Calendar occupancy is used as the operating source of truth, and annual revenue is computed as:
-
-`nightly price x calendar occupancy rate x 365`
+The key reason this candidate rises to the top is not just its segment median. Its k-NN comparable median is almost identical to the segment median, which means the recommendation is supported by similar real listings rather than only by a broad segment average.
 
 ### 2. What is the projected annual revenue under different scenarios?
 
-For the recommended Avalon 2BR condo segment:
+For the recommended Hollywood Hills West 2BR entire home segment:
 
-- Conservative scenario: `$43,914`
-- Moderate scenario: `$123,823`
-- Optimistic scenario: `$180,076`
-- Bootstrap 90% confidence interval for median revenue: `$71,380-$143,850`
-- k-NN comparable median revenue: `$142,767`
+- Conservative scenario: `$20,100`
+- Moderate scenario: `$47,628`
+- Optimistic scenario: `$78,957`
+- Bootstrap 90% confidence interval for median revenue: `$37,638-$63,627`
+- k-NN comparable median revenue: `$47,640`
 
-The conservative, moderate, and optimistic cases come from the 25th percentile, median, and 75th percentile of the full candidate segment. Bootstrap resampling estimates uncertainty around the segment median. k-NN validation is used as a realism check using the closest comparable listings.
+The conservative, moderate, and optimistic scenarios are based on the 25th percentile, median, and 75th percentile of the candidate segment. Bootstrap resampling estimates uncertainty around the segment median. k-NN validation checks whether nearby comparable listings support the segment result.
+
+Business interpretation: the expected revenue is lower than the previous separate-calendar run because the new master-data source uses Airbnb's merged annual revenue estimate rather than the earlier separately computed calendar revenue. The recommendation is therefore more conservative and more consistent with the current master dataset.
 
 ### 3. What are the biggest risks to this investment?
 
-For Avalon 2BR condos, the main risks are:
+For Hollywood Hills West 2BR entire homes, the main risks are:
 
-- **Downside revenue risk:** conservative revenue is much lower than median revenue, indicating meaningful dispersion among listings.
-- **Bootstrap uncertainty:** the 90% bootstrap interval is wide, showing uncertainty around the typical revenue estimate.
-- **Seasonality risk:** Los Angeles has a `30.1%` peak-to-trough monthly occupancy gap.
+- **Downside revenue risk:** conservative revenue is `$20,100`, meaning the lower-quartile outcome is less than half of the median.
+- **Bootstrap uncertainty:** the 90% bootstrap interval is `$37,638-$63,627`, so the typical revenue estimate has meaningful but manageable uncertainty.
+- **Seasonality risk:** Los Angeles has a `30.1%` peak-to-trough monthly occupancy gap based on the monthly calendar summary.
 - **Regulatory risk:** Los Angeles has meaningful short-term-rental compliance risk and requires external legal due diligence.
-- **Competition risk:** Avalon has `128` budget-feasible comparable listings in the neighborhood universe used for risk scoring.
+- **Competition risk:** Hollywood Hills West has `94` budget-feasible comparable listings in the neighborhood universe used for risk scoring.
 
-Despite these risks, Avalon 2BR condos still rank first on risk-adjusted revenue among the evaluated top candidates:
+Risk-adjusted ranking among the evaluated top candidates:
 
-- Moderate revenue: `$123,823`
-- Overall risk score: `0.59`
-- Risk-adjusted revenue score: `$77,727`
+1. **Los Angeles / Silver Lake / Entire home / 2BR**
+   - moderate revenue: `$45,138`
+   - overall risk score: `0.40`
+   - risk-adjusted revenue score: `$32,202`
+
+2. **Los Angeles / Hollywood Hills / Entire home / 2BR**
+   - moderate revenue: `$45,592`
+   - overall risk score: `0.42`
+   - risk-adjusted revenue score: `$32,141`
+
+3. **Los Angeles / Hollywood Hills West / Entire home / 2BR**
+   - moderate revenue: `$47,628`
+   - overall risk score: `0.67`
+   - risk-adjusted revenue score: `$28,566`
+
+Business interpretation: Hollywood Hills West remains the best single-property revenue recommendation because it has the highest moderate revenue and the strongest k-NN validation. However, Silver Lake and Hollywood Hills are credible lower-risk alternatives.
 
 ### 4. If the client could buy two properties instead of one, how should they diversify?
 
 The highest-revenue two-property portfolio is:
 
-**Avalon 2BR condo + Avalon 2BR home**
+**Hollywood Hills West 2BR entire home + Hollywood Hills 2BR entire home**
 
-- Moderate combined annual revenue: `$209,748`
-- Conservative combined annual revenue: `$77,332`
-- Optimistic combined annual revenue: `$301,846`
-- Portfolio risk score: `0.83`
+- Moderate combined annual revenue: `$93,220`
+- Conservative combined annual revenue: `$41,712`
+- Optimistic combined annual revenue: `$148,212`
+- Portfolio risk score: `0.84`
 - City occupancy correlation: `1.00`
 
-This is the maximum-revenue option, but it is highly concentrated in the same city and neighborhood.
+This is the maximum-revenue option, but it is concentrated in Los Angeles and in the same property type.
 
-The recommended risk-aware diversified portfolio is:
+The recommended diversified portfolio is:
 
-**Los Angeles / Avalon / Entire condo / 2BR + Hawaii / North Kona / Entire serviced apartment / 1BR**
+**Hollywood Hills West 2BR entire home + Midtown NYC studio entire rental unit**
 
-- Moderate combined annual revenue: `$189,886`
-- Conservative combined annual revenue: `$66,509`
-- Optimistic combined annual revenue: `$264,316`
-- Portfolio risk score: `0.18`
-- City occupancy correlation: `-0.41`
+- Moderate combined annual revenue: `$92,736`
+- Conservative combined annual revenue: `$39,688`
+- Optimistic combined annual revenue: `$156,605`
+- Portfolio risk score: `0.24`
+- City occupancy correlation: `0.29`
+- Risk-adjusted revenue score: `$75,023`
 
-This diversified portfolio gives up about `$19,862` in moderate revenue versus the concentrated max-revenue portfolio, but it reduces the portfolio risk score from `0.83` to `0.18`. This is the better recommendation for a risk-aware investor.
+Business interpretation: this portfolio gives up only `$484` in moderate annual revenue compared with the max-revenue pair, but it cuts the risk score from `0.84` to `0.24`. That is a much better tradeoff for a client who cares about diversification and downside control.
 
-## Data Sources Used
+## Method Summary
 
-### Internal Project Data
+### Step 1: Budget-Feasible Candidate Universe
 
-- `data/processed/listing_all_cleaned.csv`
-- Per-city cleaned calendars (optional row-level): `data/processed/calendar/<city_slug>/calendar_<city_slug>_cleaned.csv`
-- Merged row-level calendar (optional; ~3 GB): `data/processed/calendar_all_cleaned.csv`
-- Listing-level occupation merge (**joined with listings for modeling**): `data/processed/occupation_all_cleaned.csv`
-- `data/processed/investment_decision/step1_calendar_listing_metrics.csv`
-- `data/processed/investment_decision/step1_calendar_city_month_metrics.csv`
-- `data/processed/investment_decision/step1_budget_feasible_listing_metrics.csv`
-- `data/processed/investment_decision/step1_decision_ready_candidate_segments.csv`
-- `data/processed/investment_decision/step2_knn_comparable_listings.csv`
-- `data/processed/investment_decision/step4_city_systematic_risk.csv`
-- `data/processed/investment_decision/step4_neighborhood_systematic_risk.csv`
-- `data/processed/investment_decision/step5_city_occupancy_correlation.csv`
+The analysis first translated the $500,000 budget into feasible property configurations by city:
 
-### External Budget Feasibility Research
+- Hawaii: studio to 1BR condo/apartment-style units
+- New York: studio to 1BR in Manhattan; up to 2BR in outer boroughs
+- San Francisco: studio to small 1BR
+- Los Angeles: 1BR to 2BR condo/apartment-style units
+- Nashville: 2BR to 4BR homes, townhouses, condos, or rental units
 
-The Airbnb dataset does not contain property acquisition prices. Therefore, the $500,000 budget is used as a feasibility screen rather than as a direct ROI calculation.
+Then it filtered Airbnb listings to:
 
-Housing-market feasibility assumptions were based on the project research supplied for 2025-2026 housing conditions, including:
-
-- Redfin $500K buying-power comparison
-- Bankrate median home price data
-- Market-specific interpretation of what $500K can plausibly buy by city
-
-## Key Assumptions
-
-### Acquisition Budget Assumption
-
-Because purchase price is not available in the Airbnb dataset, we cannot compute true ROI, cap rate, or net yield. Instead, the analysis assumes that the client can consider only property configurations that are plausible under a $500,000 budget.
-
-Budget-feasible rules:
-
-- Hawaii: studio to 1BR condo/apartment-style units.
-- New York: studio to 1BR in Manhattan; up to 2BR in outer boroughs.
-- San Francisco: studio to small 1BR.
-- Los Angeles: 1BR to 2BR condo/apartment-style units.
-- Nashville: 2BR to 4BR homes, townhouses, condos, or rental units.
-
-### Revenue Assumption
-
-Revenue is calculated as:
-
-`annual revenue = nightly price x calendar occupancy rate x 365`
-
-Calendar data is used as the source of occupancy because it captures day-level availability and booked/unavailable patterns. Calendar price is used when available; when calendar price is missing, listing price is used as the nightly-rate fallback.
-
-### Candidate Segment Assumption
-
-The analysis evaluates segments rather than individual properties. A segment is defined as:
-
-`city + neighborhood + property type + bedroom count`
-
-This keeps the recommendation robust and avoids overfitting to one unusual listing.
-
-### Decision-Ready Segment Requirements
-
-To be decision-ready, a segment must have:
-
-- at least `25` comparable listings
-- median review score of at least `4.5`
-- entire home/apartment room type
-- plausible property type
+- entire home/apartment listings only
+- plausible residential property types
 - nightly price between `$50` and `$1,500`
-- computed annual revenue between `$1,000` and `$250,000`
+- occupancy proxy between `0%` and `100%`
+- annual revenue between `$1,000` and `$250,000`
+- decision-ready segments with at least `25` comparable listings
+- median review score of at least `4.5`
 
-## Constraints and Limitations
+Top candidate segments after the master-data refresh:
 
-### No Acquisition Price
+| Rank | Candidate | Median Revenue | Median Price | Median Occupancy | Comps |
+|---:|---|---:|---:|---:|---:|
+| 1 | Los Angeles / Hollywood Hills West / Entire home / 2BR | `$47,628` | `$376` | `38.1%` | `46` |
+| 2 | Los Angeles / Hollywood Hills / Entire home / 2BR | `$45,592` | `$356` | `50.4%` | `52` |
+| 3 | Los Angeles / Silver Lake / Entire home / 2BR | `$45,138` | `$251` | `51.0%` | `54` |
+| 4 | New York / Midtown / Entire rental unit / studio | `$45,108` | `$252` | `49.6%` | `151` |
+| 5 | Los Angeles / Manhattan Beach / Entire home / 2BR | `$43,968` | `$391` | `34.2%` | `26` |
 
-The biggest limitation is that the Airbnb data does not include actual property acquisition prices. Therefore, the analysis cannot directly answer:
+### Step 2: k-NN Comparable Validation
 
-- net profit
-- ROI
-- cap rate
-- financing-adjusted return
-- cash-on-cash return
+k-NN is used as a realism check, not as the primary investment model. For each top segment, it finds similar real listings in the same city, neighborhood, property type, and bedroom count.
 
-The recommendation is based on operating revenue potential among budget-plausible property types.
+The recommended Hollywood Hills West segment is strongly validated:
 
-### No Expense Data
-
-The analysis does not include:
-
-- cleaning costs
-- platform fees
-- property taxes
-- insurance
-- maintenance
-- HOA fees
-- utilities
-- property management fees
-- mortgage financing
-
-These must be layered into a final investor pro forma before a real acquisition decision.
-
-### Regulatory Risk Is A Proxy
-
-Regulatory risk is not directly measured in the Airbnb dataset. The analysis uses a city-level proxy score based on known need for short-term rental due diligence. This is not legal advice and should be validated externally.
-
-### Calendar Availability Is Interpreted As Occupancy
-
-The calendar files identify availability status. The analysis treats unavailable days as booked or occupied proxy days. This is standard for Airbnb-style analysis but can overstate true occupancy if unavailable days include owner blocks or maintenance blocks.
-
-## Step-By-Step Analytical Process
-
-## Step 1: Budget-Feasible Candidate Segment Universe
-
-### Technical Method
-
-Step 1 created a candidate universe using:
-
-- cleaned listing attributes
-- cleaned calendar occupancy
-- $500K feasibility rules
-- segment-level aggregation
-
-The output segment table was grouped by:
-
-`city + neighborhood + property type + bedrooms`
-
-For each segment, the script calculated:
-
-- comparable listing count
-- median nightly price
-- 25th and 75th percentile nightly price
-- median calendar occupancy
-- 25th and 75th percentile occupancy
-- median annual revenue
-- 25th and 75th percentile annual revenue
-- median review score
-- reviews per month
-- revenue IQR
-- risk-adjusted revenue proxy
-
-### Key Finding
-
-The top Step 1 segment was:
-
-**Los Angeles / Avalon / Entire condo / 2BR**
-
-- Median annual revenue: `$123,823`
-- Median occupancy: `47.9%`
-- Median nightly price: `$624`
-- Comparable listings: `47`
-- Median review score: `4.67`
-
-### Business Interpretation
-
-Avalon 2BR condos stand out because they combine high nightly price with enough calendar occupancy to generate strong annual revenue. The segment is not just a luxury-price play: it also has enough comparable listings to support the result.
-
-### Step 1 Outputs
-
-- `data/processed/investment_decision/step1_calendar_listing_metrics.csv`
-- `data/processed/investment_decision/step1_calendar_city_month_metrics.csv`
-- `data/processed/investment_decision/step1_budget_feasible_listing_metrics.csv`
-- `data/processed/investment_decision/step1_all_budget_feasible_candidate_segments.csv`
-- `data/processed/investment_decision/step1_decision_ready_candidate_segments.csv`
-- `results/investment_decision/step1_top_candidate_segments.csv`
-- `results/investment_decision/step1_city_candidate_summary.csv`
-- `reports/investment_decision/step1_budget_feasible_candidates.md`
-
-### Step 1 Figures
-
-- `reports/figures/05_investment_decision/step1_top_candidate_revenue.png`
-- `reports/figures/05_investment_decision/step1_best_segment_by_city.png`
-
-## Step 2: k-NN Comparable Listing Validation
-
-### Technical Method
-
-Step 2 validated the top five Step 1 candidates with k-nearest-neighbor comparable listings.
-
-The k-NN distance used:
-
-- bedroom count
-- bathrooms
-- beds
-- nightly price
-- occupancy rate
-- review score
-- reviews per month
-
-The comparable pool prioritized:
-
-1. same city
-2. same neighborhood
-3. same property type
-4. same bedroom count
-
-Each candidate was validated against the `15` nearest comparable listings.
-
-### Key Finding
-
-For the recommended Avalon 2BR condo:
-
-- Step 1 segment median revenue: `$123,823`
-- k-NN median revenue: `$142,767`
-- k-NN p25 revenue: `$126,664`
-- k-NN p75 revenue: `$191,912`
-- k-NN median occupancy: `69.3%`
-- k-NN median nightly price: `$684`
+- Segment median revenue: `$47,628`
+- k-NN median revenue: `$47,640`
+- validation gap: `$12`
 - validation status: supported by close comps
 
-### Business Interpretation
+This is important because several other high-ranking segments look weaker after k-NN validation:
 
-The k-NN results strengthen the recommendation. The closest real comparable listings perform above the segment median, which suggests the segment result is not being driven only by broad averages.
+- Hollywood Hills: k-NN median is `$7,612` below segment median
+- Silver Lake: k-NN median is `$12,432` below segment median
+- Midtown NYC: k-NN median is `$10,543` below segment median
+- Manhattan Beach: k-NN median is `$22,908` below segment median
 
-### Step 2 Outputs
+### Step 3: Scenario And Bootstrap Analysis
 
-- `data/processed/investment_decision/step2_knn_comparable_listings.csv`
-- `results/investment_decision/step2_knn_candidate_validation_summary.csv`
-- `reports/investment_decision/step2_knn_comparable_validation.md`
+The scenario analysis creates conservative, moderate, and optimistic revenue estimates from the distribution of comparable listings. The bootstrap analysis resamples candidate listings to estimate uncertainty around the segment median.
 
-### Step 2 Figure
+For Hollywood Hills West:
 
-- `reports/figures/05_investment_decision/step2_knn_validation_comparison.png`
+- conservative revenue: `$20,100`
+- moderate revenue: `$47,628`
+- optimistic revenue: `$78,957`
+- bootstrap mean median revenue: `$48,533`
+- bootstrap 90% CI: `$37,638-$63,627`
+- bootstrap CI width: `$25,989`
 
-## Step 3: Revenue Scenarios and Bootstrap Uncertainty
+Business interpretation: the median case is credible, but the downside case is real. This should be presented as a high-potential but execution-sensitive investment rather than a guaranteed cash-flow result.
 
-### Technical Method
+### Step 4: Risk Decomposition
 
-Step 3 used full segment distributions as the primary scenario basis.
+The risk model combines:
 
-Scenarios:
-
-- Conservative: 25th percentile of segment revenue
-- Moderate: median segment revenue
-- Optimistic: 75th percentile of segment revenue
-
-Bootstrap:
-
-- `1,000` bootstrap resamples
-- statistic: median annual revenue
-- interval: 90% bootstrap confidence interval
-
-Sensitivity tests:
-
-- base median case
-- price down 10%
-- occupancy down 10 percentage points
-- both price and occupancy downside
-- price up 10% and occupancy up 5 percentage points
-
-### Key Finding
-
-For Avalon 2BR condos:
-
-- Conservative revenue: `$43,914`
-- Moderate revenue: `$123,823`
-- Optimistic revenue: `$180,076`
-- Bootstrap 90% interval for median revenue: `$71,380-$143,850`
-- k-NN validation median revenue: `$142,767`
-
-### Business Interpretation
-
-The Avalon 2BR condo opportunity has high upside, but also meaningful revenue dispersion. The conservative scenario is much lower than the median, meaning execution, exact unit quality, guest experience, and listing positioning matter.
-
-The bootstrap interval supports the conclusion that typical revenue is attractive, but it also warns that the median estimate is uncertain because the segment has only `47` comparable listings.
-
-### Step 3 Outputs
-
-- `results/investment_decision/step3_revenue_scenarios.csv`
-- `results/investment_decision/step3_bootstrap_revenue_uncertainty.csv`
-- `results/investment_decision/step3_sensitivity_analysis.csv`
-- `reports/investment_decision/step3_bootstrap_scenarios.md`
-
-### Step 3 Figures
-
-- `reports/figures/05_investment_decision/step3_revenue_scenarios.png`
-- `reports/figures/05_investment_decision/step3_bootstrap_median_uncertainty.png`
-- `reports/figures/05_investment_decision/step3_top_candidate_sensitivity.png`
-
-## Step 4: Risk Decomposition
-
-### Technical Method
-
-Step 4 decomposed risk into:
-
-- downside revenue risk
-- bootstrap uncertainty risk
-- seasonality risk
-- competition risk
+- downside risk from the conservative-to-moderate revenue gap
+- bootstrap uncertainty
+- city-level seasonality from `data/processed/calendar_all_cleaned.csv`
+- neighborhood competition
+- calendar scrape-date freshness from `calendar_last_scraped`
 - regulatory proxy risk
 
-It also preserved full systematic-risk tables for city and neighborhood analysis.
+The strongest business interpretation is that **Los Angeles dominates the top revenue candidates, but Los Angeles also carries meaningful regulatory and seasonality risk**. The recommendation is therefore not simply "buy the top revenue segment"; it is "buy the top segment only if the client accepts local compliance due diligence and active operating execution." The scrape-date check shows that cities are measured within tight one-day windows, with San Francisco observed on one scrape date, so freshness does not materially change the recommendation.
 
-Seasonality was measured from monthly calendar occupancy:
+Lower-risk alternatives:
 
-- average monthly occupancy
-- minimum monthly occupancy
-- maximum monthly occupancy
-- standard deviation
-- peak-to-trough gap
-- coefficient of variation
+- Silver Lake 2BR entire home has slightly lower revenue but a better risk-adjusted score.
+- Hollywood Hills 2BR entire home has similar revenue and a better risk-adjusted score than Hollywood Hills West.
+- New York Midtown studio has high regulatory risk, so it is more useful as a diversification candidate than as the single-property recommendation.
 
-### Candidate Risk Ranking
+### Step 5: Two-Property Portfolio Diversification
 
-Top candidate risk-adjusted results:
+The portfolio model evaluates pairs of candidate segments using:
 
-1. Avalon 2BR condo:
-   - moderate revenue: `$123,823`
-   - overall risk score: `0.59`
-   - risk-adjusted revenue score: `$77,727`
-
-2. Avalon 2BR home:
-   - moderate revenue: `$85,925`
-   - overall risk score: `0.46`
-   - risk-adjusted revenue score: `$58,964`
-
-3. North Kona 1BR serviced apartment:
-   - moderate revenue: `$66,063`
-   - overall risk score: `0.44`
-   - risk-adjusted revenue score: `$45,759`
-
-4. Beverly Hills 2BR rental unit:
-   - moderate revenue: `$54,486`
-   - overall risk score: `0.37`
-   - risk-adjusted revenue score: `$39,754`
-
-5. Hollywood Hills 2BR home:
-   - moderate revenue: `$61,975`
-   - overall risk score: `0.84`
-   - risk-adjusted revenue score: `$33,732`
-
-### Systematic Market Risk
-
-City-level seasonality and systematic risk:
-
-- Nashville: average occupancy `33.0%`, peak-to-trough gap `37.0%`, coefficient of variation `0.35`
-- Los Angeles: average occupancy `43.2%`, peak-to-trough gap `30.1%`, coefficient of variation `0.22`
-- Hawaii: average occupancy `37.6%`, peak-to-trough gap `28.4%`, coefficient of variation `0.23`
-- San Francisco: average occupancy `47.9%`, peak-to-trough gap `28.4%`, coefficient of variation `0.18`
-- New York: average occupancy `56.3%`, peak-to-trough gap `22.6%`, coefficient of variation `0.12`
-
-### Business Interpretation
-
-Avalon 2BR condos remain the top risk-adjusted single-property candidate despite elevated Los Angeles regulatory proxy risk and revenue uncertainty. Hollywood Hills has meaningful revenue potential but ranks worse after risk adjustment because of high downside and uncertainty.
-
-### Step 4 Outputs
-
-- `data/processed/investment_decision/step4_city_systematic_risk.csv`
-- `data/processed/investment_decision/step4_neighborhood_systematic_risk.csv`
-- `results/investment_decision/step4_candidate_risk_decomposition.csv`
-- `results/investment_decision/step4_risk_adjusted_rankings.csv`
-- `reports/investment_decision/step4_risk_decomposition.md`
-- `reports/investment_decision/time_based_figures.md`
-
-### Step 4 Figures
-
-- `reports/figures/05_investment_decision/step4_risk_score_by_candidate.png`
-- `reports/figures/05_investment_decision/step4_risk_components_heatmap.png`
-- `reports/figures/05_investment_decision/step4_city_seasonality.png`
-- `reports/figures/05_investment_decision/step4_monthly_occupancy_by_city.png`
-- `reports/figures/05_investment_decision/step4_monthly_occupancy_index_by_city.png`
-
-## Step 5: Two-Property Portfolio Diversification
-
-### Technical Method
-
-Step 5 generated two-property portfolio combinations from the broader decision-ready candidate pool.
-
-For each portfolio, the model calculated:
-
-- combined conservative revenue
-- combined moderate revenue
-- combined optimistic revenue
-- downside ratio
-- segment uncertainty
-- city systematic risk
-- regulatory risk proxy
-- concentration penalty
-- diversification bonus
+- combined conservative, moderate, and optimistic revenue
 - city occupancy correlation
-- portfolio risk score
-- risk-adjusted revenue score
+- same-city concentration
+- same-neighborhood concentration
+- same-property-type concentration
+- average segment uncertainty
+- average systematic and regulatory risk
 
-### Portfolio Options
+Best portfolio types:
 
-#### Max Revenue Portfolio
+| Portfolio Type | Properties | Moderate Revenue | Risk Score | Interpretation |
+|---|---|---:|---:|---|
+| Max revenue | Hollywood Hills West + Hollywood Hills | `$93,220` | `0.84` | Highest revenue, but concentrated in LA |
+| Diversified | Hollywood Hills West + Midtown NYC | `$92,736` | `0.24` | Best risk-adjusted diversified choice |
+| Lower risk | Fort Hamilton NYC + Culver City LA | `$78,795` | `0.00` | Lowest risk, but materially lower revenue |
 
-**Avalon 2BR condo + Avalon 2BR home**
+### Step 5B: Efficient Frontier
 
-- moderate combined revenue: `$209,748`
-- conservative combined revenue: `$77,332`
-- optimistic combined revenue: `$301,846`
-- portfolio risk score: `0.83`
-- city occupancy correlation: `1.00`
+The efficient frontier confirms the tradeoff:
 
-Business interpretation: strongest revenue but highly concentrated in the same city and neighborhood.
+- Lowest-risk frontier portfolio: Fort Hamilton NYC studio + Culver City LA 2BR home
+- Best risk-adjusted diversified portfolio: Hollywood Hills West LA 2BR home + Midtown NYC studio
+- Max-revenue frontier portfolio: Hollywood Hills West LA 2BR home + Hollywood Hills LA 2BR home
 
-#### Diversified Portfolio
-
-**Avalon 2BR condo + North Kona 1BR serviced apartment**
-
-- moderate combined revenue: `$189,886`
-- conservative combined revenue: `$66,509`
-- optimistic combined revenue: `$264,316`
-- portfolio risk score: `0.18`
-- city occupancy correlation: `-0.41`
-
-Business interpretation: best risk-aware two-property recommendation. It preserves most of the revenue upside while reducing concentration and seasonal correlation risk.
-
-#### Lower-Risk Portfolio
-
-**Echo Park 2BR home + North Shore Kauai 0BR rental unit**
-
-- moderate combined revenue: `$83,036`
-- conservative combined revenue: `$66,037`
-- optimistic combined revenue: `$111,268`
-- portfolio risk score: `0.00`
-
-Business interpretation: lowest risk but much lower revenue potential.
-
-### Step 5 Outputs
-
-- `data/processed/investment_decision/step5_portfolio_candidate_pool.csv`
-- `data/processed/investment_decision/step5_city_occupancy_correlation.csv`
-- `results/investment_decision/step5_two_property_portfolio_candidates.csv`
-- `results/investment_decision/step5_recommended_portfolios.csv`
-- `reports/investment_decision/step5_portfolio_diversification.md`
-
-### Step 5 Figures
-
-- `reports/figures/05_investment_decision/step5_portfolio_revenue_vs_risk.png`
-- `reports/figures/05_investment_decision/step5_recommended_portfolios.png`
-- `reports/figures/05_investment_decision/step5_city_occupancy_correlation.png`
-
-## Step 5B: Efficient Frontier
-
-### Technical Method
-
-Step 5B created a simple efficient frontier from the two-property portfolio table.
-
-A portfolio is on the frontier if no other portfolio has both:
-
-- lower or equal risk
-- higher or equal revenue
-
-This is not a finance-grade mean-variance frontier because the dataset does not contain acquisition cost, expenses, or true return variance. It is a decision-support frontier using operating revenue and composite risk.
-
-### Key Frontier Results
-
-Lowest-risk frontier portfolio:
-
-**Echo Park 2BR home + North Shore Kauai 0BR rental unit**
-
-- revenue: `$83,036`
-- risk: `0.00`
-
-Highest-revenue frontier portfolio:
-
-**Avalon 2BR condo + Avalon 2BR home**
-
-- revenue: `$209,748`
-- risk: `0.83`
-
-Best balanced-score frontier portfolio:
-
-**Avalon 2BR condo + North Kona 1BR serviced apartment**
-
-- revenue: `$189,886`
-- risk: `0.18`
-
-### Business Interpretation
-
-The efficient frontier confirms that the diversified LA + Hawaii portfolio is the strongest risk-aware portfolio. It sacrifices about `$19,862` in moderate revenue compared with the max-revenue same-neighborhood Avalon portfolio, but it reduces risk dramatically.
-
-### Step 5B Outputs
-
-- `results/investment_decision/step5b_efficient_frontier_portfolios.csv`
-- `reports/investment_decision/step5b_efficient_frontier.md`
-
-### Step 5B Figure
-
-- `reports/figures/05_investment_decision/step5b_efficient_frontier.png`
-
-## Final Business Interpretation
-
-The investment section points to a clear conclusion:
-
-**For a single-property strategy, choose a Los Angeles / Avalon / 2-bedroom entire condo.**
-
-The case for this recommendation is strong because:
-
-- It is budget-plausible under the $500K feasibility screen.
-- It has the highest calendar-based median annual revenue among decision-ready candidates.
-- It is supported by 47 segment comps.
-- Its k-NN closest comps show even stronger median revenue.
-- It remains first after risk-adjusted revenue scoring.
-- Its moderate revenue is materially higher than the next-best single-property candidates.
-
-However, this is not a low-risk investment. The downside case is materially lower than the median, and Los Angeles carries meaningful regulatory proxy risk. Therefore, the client should treat this as a high-upside investment that requires careful unit selection, compliance review, and operational execution.
-
-For a two-property strategy, the recommendation changes:
-
-**Choose Avalon 2BR condo + North Kona 1BR serviced apartment.**
-
-This portfolio is preferable for a risk-aware client because it:
-
-- keeps high combined revenue
-- diversifies across Los Angeles and Hawaii
-- has negative city occupancy correlation
-- appears on the efficient frontier
-- reduces risk score substantially versus the max-revenue concentrated Avalon pair
+The diversified LA + NYC portfolio is the best recommendation because it produces nearly the same moderate revenue as the max-revenue concentrated portfolio while materially lowering risk.
 
 ## Final Recommendation
 
-### If Buying One Property
+### Single-Property Strategy
 
-Buy or target:
+**Choose a 2-bedroom entire home in Hollywood Hills West, Los Angeles.**
 
-**2-bedroom entire condo in Avalon, Los Angeles**
+Why:
 
-Expected operating revenue:
+- highest median annual revenue among decision-ready candidates
+- strong sample size for this segment (`46` comparable listings)
+- excellent review profile (`4.95` median review score)
+- k-NN median revenue almost exactly matches the segment median
+- feasible under the Los Angeles $500K property-size assumption
 
-- conservative: `$43,914`
-- moderate: `$123,823`
-- optimistic: `$180,076`
+Main cautions:
 
-Use the k-NN comp result as an upside validation:
+- conservative revenue is much lower than median revenue
+- Los Angeles has regulatory/compliance risk
+- seasonality and execution quality matter
+- the analysis estimates revenue, not net profit or ROI, because purchase prices, financing, tax, insurance, HOA, cleaning, and maintenance costs are not in the Airbnb dataset
 
-- closest comparable median revenue: `$142,767`
+### Two-Property Strategy
 
-### If Buying Two Properties
+**Choose Hollywood Hills West 2BR entire home + Midtown NYC studio entire rental unit.**
 
-Use a diversified two-market allocation:
+Why:
 
-1. **Los Angeles / Avalon / Entire condo / 2BR**
-2. **Hawaii / North Kona / Entire serviced apartment / 1BR**
+- moderate combined revenue is `$92,736`
+- revenue is almost the same as the max-revenue LA-only portfolio
+- risk score is much lower than the max-revenue portfolio
+- city correlation is only `0.29`, giving meaningful diversification
+- the pair diversifies across both city and property type
 
-Expected combined operating revenue:
+This is the recommended two-property strategy because it balances revenue and diversification better than buying two Los Angeles properties.
 
-- conservative: `$66,509`
-- moderate: `$189,886`
-- optimistic: `$264,316`
+## Files Supporting This Section
 
-This is the recommended two-property strategy because it balances revenue and diversification better than buying two properties in Avalon.
+Markdown reports:
 
-## Final Caveats Before Acquisition
+- `reports/investment_decision/step1_budget_feasible_candidates.md`
+- `reports/investment_decision/step2_knn_comparable_validation.md`
+- `reports/investment_decision/step3_bootstrap_scenarios.md`
+- `reports/investment_decision/step4_risk_decomposition.md`
+- `reports/investment_decision/step5_portfolio_diversification.md`
+- `reports/investment_decision/step5b_efficient_frontier.md`
+- `reports/investment_decision/time_based_figures.md`
+- `reports/investment_decision/figures_index.md`
 
-Before turning this analytics recommendation into a real purchase decision, the client should verify:
+Figures:
 
-- actual property acquisition price
-- HOA and condo restrictions
-- short-term rental legality and permitting
-- taxes and insurance
-- cleaning and management costs
-- expected maintenance
-- financing terms
-- local demand shocks
-- whether unavailable calendar days reflect bookings or owner blocks
-
-The analysis supports where to look first. It does not replace legal, financing, and property-level due diligence.
-
+- `reports/figures/05_investment_decision/step1_top_candidate_revenue.png`
+- `reports/figures/05_investment_decision/step1_best_segment_by_city.png`
+- `reports/figures/05_investment_decision/step2_knn_validation_comparison.png`
+- `reports/figures/05_investment_decision/step3_revenue_scenarios.png`
+- `reports/figures/05_investment_decision/step3_bootstrap_median_uncertainty.png`
+- `reports/figures/05_investment_decision/step3_top_candidate_sensitivity.png`
+- `reports/figures/05_investment_decision/step4_risk_score_by_candidate.png`
+- `reports/figures/05_investment_decision/step4_risk_components_heatmap.png`
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_by_city.png`
+- `reports/figures/05_investment_decision/step4_monthly_occupancy_index_by_city.png`
+- `reports/figures/05_investment_decision/step5_portfolio_revenue_vs_risk.png`
+- `reports/figures/05_investment_decision/step5_recommended_portfolios.png`
+- `reports/figures/05_investment_decision/step5_city_occupancy_correlation.png`
+- `reports/figures/05_investment_decision/step5b_efficient_frontier.png`

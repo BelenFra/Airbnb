@@ -1,0 +1,4 @@
+metric,value
+global_tertile_p33_usd,132.0
+global_tertile_p66_usd,250.0
+band_definitions,Equal-COUNT tertiles on working sample (~33.3% of rows each). Not equal dollar-width bands — the upper third can include extreme nightly prices.

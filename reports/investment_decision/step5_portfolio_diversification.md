@@ -28,9 +28,9 @@ Step 5 answers whether the client should allocate a two-property investment acro
 
 ## Recommended Portfolio Options
 
-- Max revenue: Los Angeles / Avalon / Entire condo / 2BR + Los Angeles / Avalon / Entire home / 2BR. Moderate combined revenue $209,748; conservative $77,332; optimistic $301,846; risk score 0.83; city occupancy correlation 1.00.
-- Diversified: Los Angeles / Avalon / Entire condo / 2BR + Hawaii / North Kona / Entire serviced apartment / 1BR. Moderate combined revenue $189,886; conservative $66,509; optimistic $264,316; risk score 0.18; city occupancy correlation -0.41.
-- Lower risk: Los Angeles / Echo Park / Entire home / 2BR + Hawaii / North Shore Kauai / Entire rental unit / 0BR. Moderate combined revenue $83,036; conservative $66,037; optimistic $111,268; risk score 0.00; city occupancy correlation -0.41.
+- Max revenue: Los Angeles / Hollywood Hills West / Entire home / 2BR + Los Angeles / Hollywood Hills / Entire home / 2BR. Moderate combined revenue $93,220; conservative $41,712; optimistic $148,212; risk score 0.84; city occupancy correlation 1.00.
+- Diversified: Los Angeles / Hollywood Hills West / Entire home / 2BR + New York / Midtown / Entire rental unit / 0BR. Moderate combined revenue $92,736; conservative $39,688; optimistic $156,604; risk score 0.24; city occupancy correlation 0.29.
+- Lower risk: New York / Fort Hamilton / Entire rental unit / 0BR + Los Angeles / Culver City / Entire home / 2BR. Moderate combined revenue $78,795; conservative $60,529; optimistic $90,075; risk score 0.00; city occupancy correlation 0.29.
 
 ## Business Interpretation
 

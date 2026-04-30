@@ -19,7 +19,7 @@ from mba706_toolkit import execute_python_code, get_column_info, get_summary_sta
 def main() -> None:
     inputs = {
         "segments": PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step1_decision_ready_candidate_segments.csv",
-        "city_month": PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step1_calendar_city_month_metrics.csv",
+        "city_month": PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step4_calendar_city_month_metrics.csv",
         "candidate_risk": PROJECT_ROOT / "results" / "investment_decision" / "step4_candidate_risk_decomposition.csv",
         "city_risk": PROJECT_ROOT / "data" / "processed" / "investment_decision" / "step4_city_systematic_risk.csv",
     }

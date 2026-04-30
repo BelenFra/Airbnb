@@ -1,26 +1,20 @@
 # MBA 706 Analytics Toolkit — Rules for Cursor
 
-You are helping an MBA student run data analytics in Cursor using an approved toolkit.
+You are helping an MBA student run data analytics in Cursor. The repo ships an analytics toolkit (`mba706_toolkit.py`) that wraps common tasks (loading, cleaning, splits, training, plotting). Use it where it helps, but it is **not** mandatory: when the toolkit does not cover the task or a teammate's PR uses pandas / scikit-learn / matplotlib directly, that is also acceptable as long as the rest of these rules (paths, reproducibility, business interpretation) are respected.
 
 ## Critical Rules
 
-1. **Toolkit only.** Use ONLY functions from `mba706_toolkit.py`. Never write raw scikit-learn, pandas plotting, or matplotlib code directly when a toolkit function exists.
-2. **No custom splits.** Always use `split_data()` — never create train/test splits manually.
-3. **Reproducibility.** Always use `RANDOM_STATE = 42`.
-4. **Scripts, not snippets.** Write analysis code as a `.py` script inside the proper folder in `scripts/`(example. scripts/cleaning/), then run it.
-5. **File discipline.** 
-    Read data from `data/raw` or `data/processed/`. 
-    Save plots (PNG/PDF) to `reports/figures/`. 
-    Save final reports (PDF/DOCX) in `reports/` 
+1. **Reproducibility.** Always use `RANDOM_STATE = 42` for any stochastic step.
+2. **Scripts, not snippets.** Write analysis code as a `.py` script inside the proper folder in `scripts/` (example: `scripts/cleaning/`), then run it.
+3. **File discipline.**
+    Read data from `data/raw` or `data/processed/`.
+    Save plots (PNG/PDF) to `reports/figures/`.
+    Save final reports (PDF/DOCX) in `reports/`.
     Save cleaned datasets (CSV/EXCEL) in `data/processed/` following the **Cleaning Pipeline Outputs** layout below.
     Save everything else (Excel/CSV/DOCX/TXT) to `results/`, organised by **business question** (`01_market_analysis/`, `02_segmentation/`, `03_pricing_models/`, `04_guest_experience/`, `05_investment_decision/`). Cleaning audits live inside `01_market_analysis/` per-asset family (`01_market_analysis/listing/`, `01_market_analysis/calendars/`, `01_market_analysis/reviews/`). Analytical outputs (cluster profiles, model metrics, revenue scenarios) go to the matching business-question folder.
-6. **Business first.** Provide business interpretation after every analysis, not just metrics.
-7. **Ask before extending.** If a needed function does not exist in the toolkit, ask the student before adding it.
-8. **No manual terminal.** Students will NOT run terminal commands. You must run all commands yourself.
-
-## When to Use `execute_python_code()`
-
-The `execute_python_code()` function is an escape hatch for tasks the toolkit doesn't cover (e.g., a custom visualization type, a one-off data transformation). Use it only when no toolkit function exists and the student has approved. Do not use it to bypass toolkit wrappers for standard tasks like model training or splitting.
+4. **Business first.** Provide business interpretation after every analysis, not just metrics.
+5. **Ask before extending the toolkit.** If you do choose to add a new function to `mba706_toolkit.py`, ask the student first.
+6. **No manual terminal.** Students will NOT run terminal commands. You must run all commands yourself.
 
 ## Environment Setup (Automatic)
 
@@ -135,16 +129,18 @@ Governance and definitions (**Document** = listing-level text unit; **Corpus** =
 - If unsafe, it falls back to sklearn GradientBoosting and returns `status=success` with `backend=sklearn_gradient_boosting_fallback`.
 - Always report which backend was used in results/interpretation.
 
-## Standard Workflow
+## Standard Workflow (toolkit reference)
 
-1. `load_data()` or `load_excel_data()`
-2. `get_column_info()` / `get_summary_statistics()`
-3. `clean_data()`
-4. `create_visualization()`
-5. `split_data()` (before any modeling)
-6. `train_*()` (one or more models)
-7. `evaluate_classifier_performance()` / `compare_models()`
-8. Save deliverables to `results/` and `reports/figures/`
+The toolkit provides a "happy path" for course-style tasks. Use it as a checklist when convenient — feel free to drop to plain pandas / scikit-learn / matplotlib when a step is more naturally written that way.
+
+1. `load_data()` or `load_excel_data()` — or `pandas.read_csv` / `read_excel` directly when chunked / streaming reads are needed.
+2. `get_column_info()` / `get_summary_statistics()`.
+3. `clean_data()`.
+4. `create_visualization()` — or `matplotlib` / `seaborn` directly for custom charts.
+5. `split_data()` (before any modeling) — keeps the 70/15/15 split + `RANDOM_STATE = 42` consistent across blocks.
+6. `train_*()` (one or more models) — or `sklearn` estimators directly.
+7. `evaluate_classifier_performance()` / `compare_models()`.
+8. Save deliverables to `results/` and `reports/figures/`.
 
 ## Cross-Platform Notes
 
