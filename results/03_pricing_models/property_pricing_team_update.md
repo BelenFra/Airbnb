@@ -1,0 +1,12 @@
+# Property / Pricing — Executive summary (team update)
+
+**For:** Group sync | **Evidence:** finalized modeling outputs (`modeling/training_outputs_property_pricing/`), modeling dataset (`modeling/property_pricing_modeling_dataset.csv`), EDA pack under `eda/`.
+
+- Built a **hedonic nightly pricing view**: predict **`log(price)`** from listing structure, **City/geo**, neighbourhoods, **`room_type` / `property_type`**, nights policy fields, host portfolio counts, and **engineered amenities** — with **IDs, raw `price` as a predictor, and leakage fields** withheld per spec (**~103.5k** listings after QA filters).
+- Trained **four supervised specs** (**two Random Forests**, **two histogram gradient-boosted trees**) on stratified train/validation/test splits; **picked the champ on validation R²**, not test.
+- **Winner:** **`RF_deeper_frac_features`** — roughly **validation R² ≈ 0.85** and **held-out test R² ≈ 0.84** (**RMSE/MAE on log-scale** documented in `model_comparison_table.csv`); boosted rivals were strong but **did not beat** this RF on the selection rule.
+- **Main insights:** Pricing tracks **guest capacity**, **longitude/latitude and neighbourhood strata**, **`room_type`/archetype**, **bathroom/bed stack**, **host inventory scale**, and **min/max-night rules**; **amenity breadth (`amenity_count`) and pool** lift the signal **after** those fundamentals (**permutation importance** in evidence pack).
+- **Markets are not interchangeable:** descriptive splits show **very different entire-home vs private-room log(price) gaps** by city (e.g. **much larger uplift in LA than Hawaii**) — comps and underwriting need **metro- and product-level** framing, not a single national coefficient story.
+- **Investment discussion:** Treat the model as **associative comps intelligence** — it helps sanity-check **where advertised ADR concentrates** vs peers with similar **sleeps, product type, and micro-location**, not **causal ROI** from CAPEX alone.
+- **Revenue linkage:** Gross cash thinking still runs **ADR × booked nights** over the horizon; **occupancy/strategy** stays a **parallel track** — we deliberately **avoided tautological revenue constructs** tied one-for-one to `price` in the pricing learner (`property_pricing_modeling_spec.txt`).
+- **Caveats (one-liner):** Snapshot **ask** prices (not negotiated clears), **no reviews in X**, **heavy tails in dollars** even after **`log`** — flag any client-facing dollar claims for **distribution risk** and qualitative diligence.
