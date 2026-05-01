@@ -45,6 +45,6 @@ Population sources used (state / city, 2024):
 ## Files
 
 - Per-city saturation CSV: `results/01_market_analysis/q3_market_saturation/per_city_saturation.csv`
-- Figure: `reports/figures/market_analysis/q3_market_saturation/01_q3_density.png`
-- Figure: `reports/figures/market_analysis/q3_market_saturation/02_q3_host_concentration.png`
-- Figure: `reports/figures/market_analysis/q3_market_saturation/03_q3_saturation_score.png`
+- Figure: `reports/figures/01_market_analysis/q3_market_saturation/01_q3_density.png`
+- Figure: `reports/figures/01_market_analysis/q3_market_saturation/02_q3_host_concentration.png`
+- Figure: `reports/figures/01_market_analysis/q3_market_saturation/03_q3_saturation_score.png`

@@ -8,9 +8,9 @@ Outputs
 -------
 - ``data/raw/reviews/_eda/reviews_raw_inventory.csv`` — per-city summary table.
 - ``data/raw/reviews/_eda/reviews_per_year_by_city.csv`` — yearly review counts.
-- ``reports/figures/market_analysis/reviews/01_market_scope_by_city.png`` — supply scale + market maturity.
-- ``reports/figures/market_analysis/reviews/02_demand_timeline_by_city.png`` — yearly review volume (demand signal).
-- ``reports/figures/market_analysis/reviews/03_data_quality_gates.png`` — quality issues that the cleaning step has to remove.
+- ``reports/figures/01_market_analysis/reviews/01_market_scope_by_city.png`` — supply scale + market maturity.
+- ``reports/figures/01_market_analysis/reviews/02_demand_timeline_by_city.png`` — yearly review volume (demand signal).
+- ``reports/figures/01_market_analysis/reviews/03_data_quality_gates.png`` — quality issues that the cleaning step has to remove.
 - ``data/raw/reviews/_eda/raw_data_memo_reviews.md`` — narrative memo for the team.
 
 The script processes each file in 200k-row chunks so memory stays below
@@ -46,7 +46,7 @@ RAW_DIR = PROJECT_ROOT / "data" / "raw" / "reviews"
 # EDA artefacts live in a sibling folder so the cleaning script's glob
 # (``RAW_DIR.glob("reviews_*.csv")``, non-recursive) does not pick them up.
 EDA_DIR = RAW_DIR / "_eda"
-FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "reviews"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "reviews"
 MEMO_PATH = EDA_DIR / "raw_data_memo_reviews.md"
 INVENTORY_CSV = EDA_DIR / "reviews_raw_inventory.csv"
 YEARLY_CSV = EDA_DIR / "reviews_per_year_by_city.csv"
@@ -57,8 +57,8 @@ PLOT_QUALITY_GATES = FIGURES_DIR / "03_data_quality_gates.png"
 
 # Path used to embed images in the memo. Memo lives at
 # ``data/raw/reviews/_eda/raw_data_memo_reviews.md``; figures live at
-# ``reports/figures/market_analysis/reviews/*.png``. Relative path goes up four levels.
-MEMO_FIG_PREFIX = "../../../../reports/figures/market_analysis/reviews"
+# ``reports/figures/01_market_analysis/reviews/*.png``. Relative path goes up four levels.
+MEMO_FIG_PREFIX = "../../../../reports/figures/01_market_analysis/reviews"
 
 CITY_FILES = {
     "hawaii": "reviews_hawaii.csv",

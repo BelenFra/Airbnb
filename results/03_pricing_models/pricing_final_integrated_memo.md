@@ -66,7 +66,7 @@ Across this specification grid, Random Forest—with the deeper, **`max_features
 
 ## 4. Feature importance — central interpretive section
 
-![Permutation importance (validation): champion Random Forest](./pricing_final_feature_importance_figure.png)
+![Permutation importance (validation): champion Random Forest](../../reports/figures/03_pricing_models/pricing_final_feature_importance_figure.png)
 
 ### 4.1 What permutation importance means (rigorous plain language)
 
@@ -109,7 +109,7 @@ Highest mean validation impacts (among non-degenerate noise columns), from **`./
 
 ## 5. Market-level findings
 
-![City mean log(price) vs entire−private-room gap](./pricing_final_city_comparison_figure.png)
+![City mean log(price) vs entire−private-room gap](../../reports/figures/03_pricing_models/pricing_final_city_comparison_figure.png)
 
 **Mean log(price) cohort** (exploratory structural-filter analytic sample underlying **the city comparison figure, left panel**; pre-model EDA — not stored as a separate CSV in this handoff beyond the table below):
 
@@ -164,7 +164,7 @@ Working descriptive sample (**after invalid nightly price exclusions**): **103,7
 
 Equal **listing-count nightly-price tertiles** — global cutpoints approximate **≈ $132 / $250** nightly (see **`./05b_price_band_cutpoints_global.csv`**). **High-band mean nightly price spikes** (**≈ $1,540** mean) precisely because tertiles are **quantity-based**, not dollar-width — all listings above roughly **~$250** remain in High.
 
-![Global price tertiles: mean occupancy vs mean revenue proxy (thousands USD)](./pricing_final_price_band_figure.png)
+![Global price tertiles: mean occupancy vs mean revenue proxy (thousands USD)](../../reports/figures/03_pricing_models/pricing_final_price_band_figure.png)
 
 *(Bar chart regenerated strictly from **`./05_price_bands_tertiles_overall.csv`**.)* 
 
@@ -235,7 +235,7 @@ _Files in this GitHub bundle live under **`results/03_pricing_models/`** (paths 
 | Descriptive correlations (price / occupancy / proxy revenue) | `./02_correlation_pearson.csv` |
 | Descriptive summaries by city & room type | `./03_summary_by_city.csv`; `./04_summary_by_room_type.csv` |
 | Global price tertiles & cutpoints | `./05_price_bands_tertiles_overall.csv`; `./05b_price_band_cutpoints_global.csv` |
-| Integrated figures (**this memo only**) | `./pricing_final_feature_importance_figure.png`, `./pricing_final_city_comparison_figure.png`, `./pricing_final_price_band_figure.png` |
+| Integrated figures (**this memo only**) | `../../reports/figures/03_pricing_models/pricing_final_feature_importance_figure.png`, `../../reports/figures/03_pricing_models/pricing_final_city_comparison_figure.png`, `../../reports/figures/03_pricing_models/pricing_final_price_band_figure.png` |
 
 ---
 

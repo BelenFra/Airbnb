@@ -20,11 +20,11 @@ Outputs
 - ``data/processed/review/_eda/reviews_processed_inventory.csv`` — per-city summary.
 - ``data/processed/review/_eda/reviews_cleaned_per_year_by_city.csv`` — yearly counts.
 - ``data/processed/review/_eda/reviews_raw_vs_cleaned_reconciliation.csv`` — raw↔cleaned ID match.
-- ``reports/figures/market_analysis/reviews/04_demand_intensity_per_listing.png`` — reviews per listing distribution.
-- ``reports/figures/market_analysis/reviews/05_seasonality_heatmap.png`` — month-of-year demand mix per city.
-- ``reports/figures/market_analysis/reviews/06_yearly_trend_indexed.png`` — recovery profile (indexed to 2019).
-- ``reports/figures/market_analysis/reviews/07_review_engagement_length.png`` — comments_clean_length distribution.
-- ``reports/figures/market_analysis/reviews/08_cleaning_pipeline_funnel.png`` — rows in → rows out by drop reason.
+- ``reports/figures/01_market_analysis/reviews/04_demand_intensity_per_listing.png`` — reviews per listing distribution.
+- ``reports/figures/01_market_analysis/reviews/05_seasonality_heatmap.png`` — month-of-year demand mix per city.
+- ``reports/figures/01_market_analysis/reviews/06_yearly_trend_indexed.png`` — recovery profile (indexed to 2019).
+- ``reports/figures/01_market_analysis/reviews/07_review_engagement_length.png`` — comments_clean_length distribution.
+- ``reports/figures/01_market_analysis/reviews/08_cleaning_pipeline_funnel.png`` — rows in → rows out by drop reason.
 - ``data/processed/review/_eda/processed_data_memo_reviews.md`` — narrative memo.
 
 Files are streamed in 200k-row chunks so memory stays bounded even though the
@@ -63,7 +63,7 @@ RANDOM_STATE = 42
 PROCESSED_REVIEW_DIR = PROJECT_ROOT / "data" / "processed" / "review"
 RAW_DIR = PROJECT_ROOT / "data" / "raw" / "reviews"
 EDA_DIR = PROCESSED_REVIEW_DIR / "_eda"
-FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "reviews"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "reviews"
 MEMO_PATH = EDA_DIR / "processed_data_memo_reviews.md"
 INVENTORY_CSV = EDA_DIR / "reviews_processed_inventory.csv"
 YEARLY_CSV = EDA_DIR / "reviews_cleaned_per_year_by_city.csv"
@@ -78,8 +78,8 @@ PLOT_FUNNEL = FIGURES_DIR / "08_cleaning_pipeline_funnel.png"
 AUDIT_CSV = PROJECT_ROOT / "results" / "01_market_analysis" / "reviews" / "reviews_cleaning_audit.csv"
 
 # Memo lives at data/processed/review/_eda/processed_data_memo_reviews.md;
-# figures live at reports/figures/market_analysis/reviews/*.png. Relative path goes up four levels.
-MEMO_FIG_PREFIX = "../../../../reports/figures/market_analysis/reviews"
+# figures live at reports/figures/01_market_analysis/reviews/*.png. Relative path goes up four levels.
+MEMO_FIG_PREFIX = "../../../../reports/figures/01_market_analysis/reviews"
 
 # Map "city" (snake_case) -> cleaned filename. After the 2026-04-29 fix
 # (csv.QUOTE_ALL + snake_case naming), all layers of the project share the
@@ -1042,7 +1042,7 @@ from this raw snapshot.
 | Per-city summary CSV | `data/processed/review/_eda/reviews_processed_inventory.csv` |
 | Yearly counts CSV | `data/processed/review/_eda/reviews_cleaned_per_year_by_city.csv` |
 | Reconciliation CSV | `data/processed/review/_eda/reviews_raw_vs_cleaned_reconciliation.csv` |
-| Plots | `reports/figures/market_analysis/reviews/04_*.png` to `reports/figures/market_analysis/reviews/08_*.png` |
+| Plots | `reports/figures/01_market_analysis/reviews/04_*.png` to `reports/figures/01_market_analysis/reviews/08_*.png` |
 | Cleaning audit CSV | `results/01_market_analysis/reviews/reviews_cleaning_audit.csv` (drop reasons per city) |
 
 All five layers (raw / processed / listings / calendars / reviews) use the

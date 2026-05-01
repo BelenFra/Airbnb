@@ -22,7 +22,7 @@ Inside Airbnb publishes a six-column CSV per city, scraped from public Airbnb pa
 
 ## 2. Market scope and recent demand intensity
 
-![Market scope by city](../../../../reports/figures/market_analysis/reviews/01_market_scope_by_city.png)
+![Market scope by city](../../../../reports/figures/01_market_analysis/reviews/01_market_scope_by_city.png)
 
 | city          |   rows_total |   unique_listings |   unique_reviewers | min_date   | max_date   |   comment_length_median |   comment_length_p95 |   english_share_estimate |
 |:--------------|-------------:|------------------:|-------------------:|:-----------|:-----------|------------------------:|---------------------:|-------------------------:|
@@ -40,7 +40,7 @@ Inside Airbnb publishes a six-column CSV per city, scraped from public Airbnb pa
 
 ## 3. Demand timeline (yearly review volume)
 
-![Demand timeline](../../../../reports/figures/market_analysis/reviews/02_demand_timeline_by_city.png)
+![Demand timeline](../../../../reports/figures/01_market_analysis/reviews/02_demand_timeline_by_city.png)
 
 |   year |   hawaii |   los_angeles |   nashville |   new_york |   san_francisco |
 |-------:|---------:|--------------:|------------:|-----------:|----------------:|
@@ -68,7 +68,7 @@ Inside Airbnb publishes a six-column CSV per city, scraped from public Airbnb pa
 
 ## 4. Data quality and what the cleaner has to remove
 
-![Data-quality gates](../../../../reports/figures/market_analysis/reviews/03_data_quality_gates.png)
+![Data-quality gates](../../../../reports/figures/01_market_analysis/reviews/03_data_quality_gates.png)
 
 | city          |   rows_total |   duplicate_review_ids |   blank_comments |   pct_blank |   comments_under_30_chars |   pct_short_30 |   rows_with_html_tags |   pct_html |   rows_with_non_ascii |   pct_non_ascii |
 |:--------------|-------------:|-----------------------:|-----------------:|------------:|--------------------------:|---------------:|----------------------:|-----------:|----------------------:|----------------:|

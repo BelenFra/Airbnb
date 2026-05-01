@@ -9,9 +9,9 @@ Outputs
 -------
 - ``results/01_market_analysis/q2_price_occupancy_revenue/per_city_summary.csv``
 - ``results/01_market_analysis/q2_price_occupancy_revenue/q2_summary.md``
-- ``reports/figures/market_analysis/q2_price_occupancy_revenue/01_q2_price_distribution.png``
-- ``reports/figures/market_analysis/q2_price_occupancy_revenue/02_q2_occupancy_distribution.png``
-- ``reports/figures/market_analysis/q2_price_occupancy_revenue/03_q2_three_metric_comparison.png``
+- ``reports/figures/01_market_analysis/q2_price_occupancy_revenue/01_q2_price_distribution.png``
+- ``reports/figures/01_market_analysis/q2_price_occupancy_revenue/02_q2_occupancy_distribution.png``
+- ``reports/figures/01_market_analysis/q2_price_occupancy_revenue/03_q2_three_metric_comparison.png``
 
 Toolkit usage (per AGENTS.md rule #1)
 -------------------------------------
@@ -56,7 +56,7 @@ RANDOM_STATE = 42
 
 MASTER_FILE = PROJECT_ROOT / "data" / "processed" / "master_data.csv"
 RESULTS_DIR = PROJECT_ROOT / "results" / "01_market_analysis" / "q2_price_occupancy_revenue"
-FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "q2_price_occupancy_revenue"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "q2_price_occupancy_revenue"
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)

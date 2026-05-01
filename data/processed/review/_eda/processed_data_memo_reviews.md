@@ -39,7 +39,7 @@
 
 ## 2. Demand intensity per listing — Plot 04
 
-![Demand intensity per listing](../../../../reports/figures/market_analysis/reviews/04_demand_intensity_per_listing.png)
+![Demand intensity per listing](../../../../reports/figures/01_market_analysis/reviews/04_demand_intensity_per_listing.png)
 
 | city          |   n_listings |   median_reviews_per_listing |   p75 |   p95 |   p99 |   max |
 |:--------------|-------------:|-----------------------------:|------:|------:|------:|------:|
@@ -59,7 +59,7 @@ step builds against).
 
 ## 3. Seasonality of demand — Plot 05
 
-![Seasonality heatmap](../../../../reports/figures/market_analysis/reviews/05_seasonality_heatmap.png)
+![Seasonality heatmap](../../../../reports/figures/01_market_analysis/reviews/05_seasonality_heatmap.png)
 
 | city          | peak_month   |   peak_share_pct | trough_month   |   trough_share_pct |   peak_to_trough_ratio |
 |:--------------|:-------------|-----------------:|:---------------|-------------------:|-----------------------:|
@@ -79,7 +79,7 @@ seasonality?".
 
 ## 4. Post-COVID recovery — Plot 06
 
-![Yearly trend, indexed to 2019](../../../../reports/figures/market_analysis/reviews/06_yearly_trend_indexed.png)
+![Yearly trend, indexed to 2019](../../../../reports/figures/01_market_analysis/reviews/06_yearly_trend_indexed.png)
 
 | city          |   reviews_2019 |   reviews_2025 |   indexed_to_2019 |
 |:--------------|---------------:|---------------:|------------------:|
@@ -98,7 +98,7 @@ recovered first; business-travel markets (SF) and regulation-heavy markets
 
 ## 5. Review engagement (text quality) — Plot 07
 
-![Review engagement length](../../../../reports/figures/market_analysis/reviews/07_review_engagement_length.png)
+![Review engagement length](../../../../reports/figures/01_market_analysis/reviews/07_review_engagement_length.png)
 
 | city          |   min |   p25 |   p50 |   p75 |   p95 |   p99 |   max |
 |:--------------|------:|------:|------:|------:|------:|------:|------:|
@@ -125,7 +125,7 @@ Median lengths range across cities; LA / SF have a fatter "short" left tail.
 
 ## 6. How destructive is the cleaning? — Plot 08
 
-![Cleaning pipeline funnel](../../../../reports/figures/market_analysis/reviews/08_cleaning_pipeline_funnel.png)
+![Cleaning pipeline funnel](../../../../reports/figures/01_market_analysis/reviews/08_cleaning_pipeline_funnel.png)
 
 **How to read this:** for each city the bar starts at 100% raw rows. The
 green segment is the surviving (usable) corpus, the other segments are the
@@ -178,7 +178,7 @@ from this raw snapshot.
 | Per-city summary CSV | `data/processed/review/_eda/reviews_processed_inventory.csv` |
 | Yearly counts CSV | `data/processed/review/_eda/reviews_cleaned_per_year_by_city.csv` |
 | Reconciliation CSV | `data/processed/review/_eda/reviews_raw_vs_cleaned_reconciliation.csv` |
-| Plots | `reports/figures/market_analysis/reviews/04_*.png` to `reports/figures/market_analysis/reviews/08_*.png` |
+| Plots | `reports/figures/01_market_analysis/reviews/04_*.png` to `reports/figures/01_market_analysis/reviews/08_*.png` |
 | Cleaning audit CSV | `results/01_market_analysis/reviews/reviews_cleaning_audit.csv` (drop reasons per city) |
 
 All five layers (raw / processed / listings / calendars / reviews) use the

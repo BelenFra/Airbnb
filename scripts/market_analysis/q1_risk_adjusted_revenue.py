@@ -9,9 +9,9 @@ Outputs
 -------
 - ``results/01_market_analysis/q1_risk_adjusted_revenue/per_city_metrics.csv``
 - ``results/01_market_analysis/q1_risk_adjusted_revenue/q1_summary.md``
-- ``reports/figures/market_analysis/q1_risk_adjusted_revenue/01_q1_revenue_boxplot.png``
-- ``reports/figures/market_analysis/q1_risk_adjusted_revenue/02_q1_sharpe_ranking.png``
-- ``reports/figures/market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png``
+- ``reports/figures/01_market_analysis/q1_risk_adjusted_revenue/01_q1_revenue_boxplot.png``
+- ``reports/figures/01_market_analysis/q1_risk_adjusted_revenue/02_q1_sharpe_ranking.png``
+- ``reports/figures/01_market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png``
 
 Method
 ------
@@ -67,7 +67,7 @@ RANDOM_STATE = 42
 
 MASTER_FILE = PROJECT_ROOT / "data" / "processed" / "master_data.csv"
 RESULTS_DIR = PROJECT_ROOT / "results" / "01_market_analysis" / "q1_risk_adjusted_revenue"
-FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "q1_risk_adjusted_revenue"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "q1_risk_adjusted_revenue"
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)

@@ -9,9 +9,9 @@ Outputs
 -------
 - ``results/01_market_analysis/q3_market_saturation/per_city_saturation.csv``
 - ``results/01_market_analysis/q3_market_saturation/q3_summary.md``
-- ``reports/figures/market_analysis/q3_market_saturation/01_q3_density.png``
-- ``reports/figures/market_analysis/q3_market_saturation/02_q3_host_concentration.png``
-- ``reports/figures/market_analysis/q3_market_saturation/03_q3_saturation_score.png``
+- ``reports/figures/01_market_analysis/q3_market_saturation/01_q3_density.png``
+- ``reports/figures/01_market_analysis/q3_market_saturation/02_q3_host_concentration.png``
+- ``reports/figures/01_market_analysis/q3_market_saturation/03_q3_saturation_score.png``
 
 Method
 ------
@@ -70,7 +70,7 @@ RANDOM_STATE = 42
 
 MASTER_FILE = PROJECT_ROOT / "data" / "processed" / "master_data.csv"
 RESULTS_DIR = PROJECT_ROOT / "results" / "01_market_analysis" / "q3_market_saturation"
-FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "q3_market_saturation"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "q3_market_saturation"
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)

@@ -114,7 +114,7 @@ def dtype_group(dtype_str: str) -> str:
 def main() -> None:
     data_root = PROJECT_ROOT / "data" / "raw" / "listing"
     results_root = PROJECT_ROOT / "results"
-    figures_root = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "listing"
+    figures_root = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "listing"
     results_root.mkdir(parents=True, exist_ok=True)
     figures_root.mkdir(parents=True, exist_ok=True)
 

@@ -66,7 +66,7 @@ import pandas as pd
 
 RANDOM_STATE = 42
 
-FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "calendar"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "calendar"
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 RAW_CALENDARS_DIR = PROJECT_ROOT / "data" / "raw" / "calendars"

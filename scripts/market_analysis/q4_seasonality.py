@@ -10,9 +10,9 @@ Outputs
 - ``results/01_market_analysis/q4_seasonality/monthly_metrics.csv``
 - ``results/01_market_analysis/q4_seasonality/per_city_seasonality.csv``
 - ``results/01_market_analysis/q4_seasonality/q4_summary.md``
-- ``reports/figures/market_analysis/q4_seasonality/01_q4_monthly_demand.png``
-- ``reports/figures/market_analysis/q4_seasonality/02_q4_monthly_revenue.png``
-- ``reports/figures/market_analysis/q4_seasonality/03_q4_seasonality_strength.png``
+- ``reports/figures/01_market_analysis/q4_seasonality/01_q4_monthly_demand.png``
+- ``reports/figures/01_market_analysis/q4_seasonality/02_q4_monthly_revenue.png``
+- ``reports/figures/01_market_analysis/q4_seasonality/03_q4_seasonality_strength.png``
 
 Method
 ------
@@ -78,7 +78,7 @@ RANDOM_STATE = 42
 CALENDAR_FILE = PROJECT_ROOT / "data" / "processed" / "calendar_all_cleaned.csv"
 MASTER_FILE = PROJECT_ROOT / "data" / "processed" / "master_data.csv"
 RESULTS_DIR = PROJECT_ROOT / "results" / "01_market_analysis" / "q4_seasonality"
-FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "market_analysis" / "q4_seasonality"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures" / "01_market_analysis" / "q4_seasonality"
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)

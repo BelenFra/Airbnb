@@ -65,14 +65,14 @@ The market-level conclusion is therefore not “Hawaii is automatically the fina
 
 **Additional numeric anchors.** Hawaii has about **33,132 active listings**, a **median nightly price of $233**, **median occupancy of 31.0%**, and **median annual revenue of $26,582**. San Francisco has the highest mean occupancy at roughly **39.0%**, while New York is the most stable seasonal market with revenue CV around **0.13**. Hawaii’s saturation score is **0.705**, driven by about **228 listings per 10,000 residents** and roughly **82.3%** of listings in multi-listing host portfolios. Nashville is the most seasonal market, with a revenue peak-to-low ratio of about **2.82x**.
 
-**Figures that fit naturally in this body.** When turning this memo into a report, include `reports/figures/market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png` after the risk-adjusted revenue discussion, because it visually shows the return-risk tradeoff. Include `reports/figures/market_analysis/q3_market_saturation/03_q3_saturation_score.png` after the saturation paragraph. Include `reports/figures/market_analysis/q4_seasonality/03_q4_seasonality_strength.png` after the seasonality paragraph. If space allows, `reports/figures/market_analysis/q2_price_occupancy_revenue/03_q2_three_metric_comparison.png` is the best single chart for price, occupancy, and revenue side by side.
+**Figures that fit naturally in this body.** When turning this memo into a report, include `reports/figures/01_market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png` after the risk-adjusted revenue discussion, because it visually shows the return-risk tradeoff. Include `reports/figures/01_market_analysis/q3_market_saturation/03_q3_saturation_score.png` after the saturation paragraph. Include `reports/figures/01_market_analysis/q4_seasonality/03_q4_seasonality_strength.png` after the seasonality paragraph. If space allows, `reports/figures/01_market_analysis/q2_price_occupancy_revenue/03_q2_three_metric_comparison.png` is the best single chart for price, occupancy, and revenue side by side.
 
 Useful supporting outputs:
 
 - `results/01_market_analysis/market_analysis_memo.md`
-- `reports/figures/market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png`
-- `reports/figures/market_analysis/q3_market_saturation/03_q3_saturation_score.png`
-- `reports/figures/market_analysis/q4_seasonality/03_q4_seasonality_strength.png`
+- `reports/figures/01_market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png`
+- `reports/figures/01_market_analysis/q3_market_saturation/03_q3_saturation_score.png`
+- `reports/figures/01_market_analysis/q4_seasonality/03_q4_seasonality_strength.png`
 
 ## Segmentation And Neighborhood Strategy
 
@@ -146,15 +146,16 @@ This matters for the final recommendation because it warns against oversimplifie
 
 **Additional numeric anchors.** The modeling cohort has about **103,500 listings** after quality filters. The winning Random Forest model has **validation R² about 0.846** and **test R² about 0.839**. Its most important features include `accommodates` with permutation drop around **0.117**, `longitude` around **0.103**, `host_total_listings_count` around **0.082**, `bathrooms` around **0.074**, and `room_type` around **0.071**. In the descriptive pricing analysis, the global high-price tertile has mean nightly price around **$1,540**, mean estimated occupancy around **51 nights/year**, and mean annual revenue proxy around **$27,189**. The correlation between price and estimated occupancy is weakly negative at about **-0.086**, while price and revenue proxy are weakly positive at about **0.188**.
 
-**Figures that fit naturally in this body.** Include `results/03_pricing_models/pricing_final_feature_importance_figure.png` after the model-driver paragraph. Include `results/03_pricing_models/pricing_final_city_comparison_figure.png` after the city heterogeneity discussion. Include `results/03_pricing_models/pricing_final_price_band_figure.png` after the price-band paragraph because it directly shows the price-occupancy-revenue tradeoff.
+**Figures that fit naturally in this body.** Include `reports/figures/03_pricing_models/pricing_final_feature_importance_figure.png` after the model-driver paragraph. Include `reports/figures/03_pricing_models/pricing_final_city_comparison_figure.png` after the city heterogeneity discussion. Include `reports/figures/03_pricing_models/pricing_final_price_band_figure.png` after the price-band paragraph because it directly shows the price-occupancy-revenue tradeoff.
 
 Useful supporting outputs:
 
 - `results/03_pricing_models/pricing_final_integrated_memo.md`
 - `results/03_pricing_models/model_comparison_table.csv`
 - `results/03_pricing_models/feature_importance_permutation_validation.csv`
-- `results/03_pricing_models/pricing_final_feature_importance_figure.png`
-- `results/03_pricing_models/pricing_final_price_band_figure.png`
+- `reports/figures/03_pricing_models/pricing_final_feature_importance_figure.png`
+- `reports/figures/03_pricing_models/pricing_final_city_comparison_figure.png`
+- `reports/figures/03_pricing_models/pricing_final_price_band_figure.png`
 
 ## Guest Experience And Text Analytics
 

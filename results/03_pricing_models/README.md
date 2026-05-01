@@ -63,10 +63,10 @@ This block focuses on the pricing side of the investment decision:
 - `05_price_bands_tertiles_overall.csv` — global price-band summary using tertiles
 - `05b_price_band_cutpoints_global.csv` — cutpoints used to define the tertile bands
 
-### Figures
-- `pricing_final_feature_importance_figure.png`
-- `pricing_final_city_comparison_figure.png`
-- `pricing_final_price_band_figure.png`
+### Figures (live under `reports/figures/03_pricing_models/`)
+- `../../reports/figures/03_pricing_models/pricing_final_feature_importance_figure.png`
+- `../../reports/figures/03_pricing_models/pricing_final_city_comparison_figure.png`
+- `../../reports/figures/03_pricing_models/pricing_final_price_band_figure.png`
 
 These figures are referenced in the integrated memo and support team review of the pricing results.
 

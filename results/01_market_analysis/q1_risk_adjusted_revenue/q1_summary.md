@@ -39,6 +39,6 @@ a city in the top-left (high median, low IQR) is the prime candidate.
 ## Files
 
 - Per-city metrics CSV: `results/01_market_analysis/q1_risk_adjusted_revenue/per_city_metrics.csv`
-- Figure: `reports/figures/market_analysis/q1_risk_adjusted_revenue/01_q1_revenue_boxplot.png`
-- Figure: `reports/figures/market_analysis/q1_risk_adjusted_revenue/02_q1_sharpe_ranking.png`
-- Figure: `reports/figures/market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png`
+- Figure: `reports/figures/01_market_analysis/q1_risk_adjusted_revenue/01_q1_revenue_boxplot.png`
+- Figure: `reports/figures/01_market_analysis/q1_risk_adjusted_revenue/02_q1_sharpe_ranking.png`
+- Figure: `reports/figures/01_market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png`

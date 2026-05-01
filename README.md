@@ -162,10 +162,10 @@ under `scripts/market_analysis/`:
 
 | Q | Question | Script | Outputs |
 |---|---|---|---|
-| Q1 | Best risk-adjusted revenue opportunity | `scripts/market_analysis/q1_risk_adjusted_revenue.py` | `results/01_market_analysis/q1_risk_adjusted_revenue/`, `reports/figures/market_analysis/q1_risk_adjusted_revenue/` |
-| Q2 | Price, occupancy, revenue comparison | `scripts/market_analysis/q2_price_occupancy_revenue.py` | `results/01_market_analysis/q2_price_occupancy_revenue/`, `reports/figures/market_analysis/q2_price_occupancy_revenue/` |
-| Q3 | Market saturation / room for new entrants | `scripts/market_analysis/q3_market_saturation.py` | `results/01_market_analysis/q3_market_saturation/`, `reports/figures/market_analysis/q3_market_saturation/` |
-| Q4 | Seasonality of demand and revenue | `scripts/market_analysis/q4_seasonality.py` | `results/01_market_analysis/q4_seasonality/`, `reports/figures/market_analysis/q4_seasonality/` |
+| Q1 | Best risk-adjusted revenue opportunity | `scripts/market_analysis/q1_risk_adjusted_revenue.py` | `results/01_market_analysis/q1_risk_adjusted_revenue/`, `reports/figures/01_market_analysis/q1_risk_adjusted_revenue/` |
+| Q2 | Price, occupancy, revenue comparison | `scripts/market_analysis/q2_price_occupancy_revenue.py` | `results/01_market_analysis/q2_price_occupancy_revenue/`, `reports/figures/01_market_analysis/q2_price_occupancy_revenue/` |
+| Q3 | Market saturation / room for new entrants | `scripts/market_analysis/q3_market_saturation.py` | `results/01_market_analysis/q3_market_saturation/`, `reports/figures/01_market_analysis/q3_market_saturation/` |
+| Q4 | Seasonality of demand and revenue | `scripts/market_analysis/q4_seasonality.py` | `results/01_market_analysis/q4_seasonality/`, `reports/figures/01_market_analysis/q4_seasonality/` |
 
 All four scripts read from `data/processed/master_data.csv`; Q4 additionally
 streams `data/processed/calendar_all_cleaned.csv` in chunks. Each script writes

@@ -94,13 +94,13 @@ We stream `calendar_all_cleaned.csv` (~3 GB) in 1.5M-row chunks and aggregate pe
 
 ### 4.1 Q1 — Risk-adjusted revenue
 
-![Revenue distribution boxplot](../../reports/figures/market_analysis/q1_risk_adjusted_revenue/01_q1_revenue_boxplot.png)
+![Revenue distribution boxplot](../../reports/figures/01_market_analysis/q1_risk_adjusted_revenue/01_q1_revenue_boxplot.png)
 
 > **How to read.** Each box is the per-listing annual revenue proxy distribution for one city. The whisker on Hawaii is the longest because Hawaii contains the luxury-villa tail (price up to ~$85k/night). Median (the line inside the box) is what we anchor on, not the mean.
 
-![Sharpe-style ranking (median/IQR)](../../reports/figures/market_analysis/q1_risk_adjusted_revenue/02_q1_sharpe_ranking.png)
+![Sharpe-style ranking (median/IQR)](../../reports/figures/01_market_analysis/q1_risk_adjusted_revenue/02_q1_sharpe_ranking.png)
 
-![Return vs risk](../../reports/figures/market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png)
+![Return vs risk](../../reports/figures/01_market_analysis/q1_risk_adjusted_revenue/03_q1_return_vs_risk.png)
 
 > **How to read.** X = IQR (cross-listing dispersion = "risk"). Y = median revenue per listing ("typical return"). Bubble size = number of listings in the city. **Top-left = high typical return, low dispersion**; that is the prime candidate. Hawaii dominates the Y axis but pays for it on X (highest IQR among the five). Nashville has the lowest IQR but also the second-lowest median.
 
@@ -120,11 +120,11 @@ Reading:
 
 ### 4.2 Q2 — Price · Occupancy · Revenue
 
-![Price distribution](../../reports/figures/market_analysis/q2_price_occupancy_revenue/01_q2_price_distribution.png)
+![Price distribution](../../reports/figures/01_market_analysis/q2_price_occupancy_revenue/01_q2_price_distribution.png)
 
-![Occupancy distribution](../../reports/figures/market_analysis/q2_price_occupancy_revenue/02_q2_occupancy_distribution.png)
+![Occupancy distribution](../../reports/figures/01_market_analysis/q2_price_occupancy_revenue/02_q2_occupancy_distribution.png)
 
-![Three-metric comparison](../../reports/figures/market_analysis/q2_price_occupancy_revenue/03_q2_three_metric_comparison.png)
+![Three-metric comparison](../../reports/figures/01_market_analysis/q2_price_occupancy_revenue/03_q2_three_metric_comparison.png)
 
 > **How to read.** Three side-by-side panels: median nightly price, mean occupancy, mean annual revenue. Each city has the same colour across panels so a city's "shape" across the three is easy to read.
 
@@ -144,11 +144,11 @@ Reading:
 
 ### 4.3 Q3 — Market saturation
 
-![Listings per 10k residents](../../reports/figures/market_analysis/q3_market_saturation/01_q3_density.png)
+![Listings per 10k residents](../../reports/figures/01_market_analysis/q3_market_saturation/01_q3_density.png)
 
-![Host concentration](../../reports/figures/market_analysis/q3_market_saturation/02_q3_host_concentration.png)
+![Host concentration](../../reports/figures/01_market_analysis/q3_market_saturation/02_q3_host_concentration.png)
 
-![Saturation composite score](../../reports/figures/market_analysis/q3_market_saturation/03_q3_saturation_score.png)
+![Saturation composite score](../../reports/figures/01_market_analysis/q3_market_saturation/03_q3_saturation_score.png)
 
 > **How to read.** Composite `saturation_score ∈ [0, 1]` aggregates four normalised facets — density, host HHI, multi-listing share and (1 − occupancy). Bars are sorted descending; higher = more saturated = harder for a new entrant to win.
 
@@ -169,11 +169,11 @@ Reading:
 
 ### 4.4 Q4 — Seasonality
 
-![Monthly demand by city](../../reports/figures/market_analysis/q4_seasonality/01_q4_monthly_demand.png)
+![Monthly demand by city](../../reports/figures/01_market_analysis/q4_seasonality/01_q4_monthly_demand.png)
 
-![Monthly revenue per listing](../../reports/figures/market_analysis/q4_seasonality/02_q4_monthly_revenue.png)
+![Monthly revenue per listing](../../reports/figures/01_market_analysis/q4_seasonality/02_q4_monthly_revenue.png)
 
-![Seasonality strength (CV)](../../reports/figures/market_analysis/q4_seasonality/03_q4_seasonality_strength.png)
+![Seasonality strength (CV)](../../reports/figures/01_market_analysis/q4_seasonality/03_q4_seasonality_strength.png)
 
 > **How to read.** Top: monthly `demand_proxy` per city (1 − mean(available)). Middle: monthly `revenue_per_listing = demand × median_price × days_in_month`. Bottom: coefficient of variation across complete months — higher = more seasonal. Partial first/last months were filtered out (the snapshot caps the calendar at ~12 months from the scrape date, so the trailing month is always partial).
 
@@ -228,7 +228,7 @@ Concrete asks for downstream blocks:
 | `reviews/` | `reviews_cleaning_audit.csv` (cleaning audit) |
 | `market_analysis_memo.md` | This memo. |
 
-### Figures (`reports/figures/market_analysis/`)
+### Figures (`reports/figures/01_market_analysis/`)
 
 | Folder | Files |
 | --- | --- |
@@ -268,6 +268,6 @@ All four scripts use `mba706_toolkit` for `load_data` / `get_summary_statistics`
    python scripts/market_analysis/q4_seasonality.py
    ```
 
-3. Outputs appear under `results/01_market_analysis/q*/` and `reports/figures/market_analysis/q*/`. Each script also rewrites its own `q*_summary.md`.
+3. Outputs appear under `results/01_market_analysis/q*/` and `reports/figures/01_market_analysis/q*/`. Each script also rewrites its own `q*_summary.md`.
 
 Rough runtime: Q1–Q3 finish in well under a minute each on a MacBook (single load of `master_data.csv`, ~270 MB). Q4 streams the ~3 GB `calendar_all_cleaned.csv` and takes ~3–5 minutes depending on disk speed. All paths are `PROJECT_ROOT`-relative so the scripts also run on a clean clone.

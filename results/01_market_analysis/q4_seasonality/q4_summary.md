@@ -37,6 +37,6 @@
 
 - Monthly metrics CSV: `results/01_market_analysis/q4_seasonality/monthly_metrics.csv`
 - Per-city seasonality CSV: `results/01_market_analysis/q4_seasonality/per_city_seasonality.csv`
-- Figure: `reports/figures/market_analysis/q4_seasonality/01_q4_monthly_demand.png`
-- Figure: `reports/figures/market_analysis/q4_seasonality/02_q4_monthly_revenue.png`
-- Figure: `reports/figures/market_analysis/q4_seasonality/03_q4_seasonality_strength.png`
+- Figure: `reports/figures/01_market_analysis/q4_seasonality/01_q4_monthly_demand.png`
+- Figure: `reports/figures/01_market_analysis/q4_seasonality/02_q4_monthly_revenue.png`
+- Figure: `reports/figures/01_market_analysis/q4_seasonality/03_q4_seasonality_strength.png`
