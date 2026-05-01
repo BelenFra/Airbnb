@@ -109,7 +109,7 @@ Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machi
 
 | Folder / File | Purpose |
 |---|---|
-| `mba706_toolkit.py` | Approved analytics functions (the only library you need) |
+| `mba706_toolkit.py` | Course-provided analytics helpers (loading, splits, training, plotting). Optional — see `AGENTS.md` for usage policy. |
 | `AGENTS.md` | Rules for Cursor's AI (read automatically) |
 | `CLAUDE.md` | Backup rules for Claude Code CLI (delegates to `AGENTS.md`) |
 | `FUNCTIONS.md` | **Quick reference** — every toolkit function on one page |
@@ -123,7 +123,7 @@ Rough runtime (5 cities raw calendars): ~20–25 minutes on a laptop class machi
 | `scripts/market_analysis/` | Q1–Q4 market-level analysis scripts (risk-adjusted revenue, price/occupancy/revenue, saturation, seasonality) |
 | `scripts/models/` | Modeling scripts: clustering (`segmentation_kmeans.py`), investment decision steps, kNN, **text analytics** (`models/text_analysis/`: TF–IDF pipeline, `text_analytics_readme.md`) |
 | `reports/` | Final deliverables (memo, slides) |
-| `reports/figures/` | All plots (PNG, PDF) — `market_analysis/` (Q1–Q4), `02_segmentation/`, `04_guest_experience/`, **`05_investment_decision/`** (step1–step5b investment charts) |
+| `reports/figures/` | All plots (PNG, PDF), organised by business question: `01_market_analysis/` (Q1–Q4 + EDA per data stream), `02_segmentation/`, `03_pricing_models/`, `04_guest_experience/`, **`05_investment_decision/`** (step1–step5b investment charts) |
 | `results/` | Analytical outputs organised by **business question** (`01_market_analysis/`, `02_segmentation/`, `03_pricing_models/`, `04_guest_experience/`, `05_investment_decision/`). Cleaning audits live inside `01_market_analysis/` (per-asset subfolders: `01_market_analysis/listing/`, `01_market_analysis/calendars/`, `01_market_analysis/reviews/`). See `results/README.md`. |
 
 > Cleaning rules and dataset layout are documented alongside code (`scripts/cleaning/*/README*.md`) and `AGENTS.md`; large derived CSV folders under `data/processed/` are gitignored except what you regenerate locally after cloning.
